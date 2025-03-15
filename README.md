@@ -1,8 +1,6 @@
-# starter kits
+# korekara
 
-This starter template is built with Next.js 15, React 19, TypeScript 5, Tailwind CSS 4 and comes packed with several powerful tools and configurations to accelerate your project setup and streamline development workflows using VS Code.
-
-ref: [nextjs-15-starter-tailwind](https://github.com/siddharthamaity/nextjs-15-starter-tailwind)
+this app allows user to customize your plan and todos.
 
 ## 🚀 What's Included
 
