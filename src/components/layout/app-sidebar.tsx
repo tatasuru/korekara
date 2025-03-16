@@ -19,12 +19,12 @@ import { Calendar, Home, Inbox, Search, Settings } from 'lucide-react';
 // Menu items.
 const items = [
   {
-    title: 'Calendar',
+    title: 'CALENDAR',
     url: '/',
     icon: Calendar
   },
   {
-    title: 'Todos',
+    title: 'TODOs',
     url: '/todos',
     icon: Inbox
   }

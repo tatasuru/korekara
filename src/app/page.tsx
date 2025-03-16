@@ -137,7 +137,7 @@ export default function Page() {
             variant='outline'
             size='sm'
             onClick={goBackToday}
-            className='cursor-pointer'
+            className='cursor-pointer border-[#ebbe4d] text-[#ebbe4d] hover:bg-[#ebbe4d] hover:text-white'
             disabled={!date || format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')}>
             今日へ戻る
           </Button>
@@ -186,7 +186,8 @@ export default function Page() {
                 row: 'w-full mt-2 border-b',
                 cell: 'relative p-2 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-range-end)]:rounded-r-md',
                 day: 'absolute top-2 left-1/2 transform -translate-x-1/2 p-0 md:w-8 md:h-8 w-6 h-6 md:text-sm flex items-center justify-center rounded-full cursor-pointer text-xs',
-                day_selected: 'bg-emerald-600 text-white'
+                day_selected: 'bg-[#ebbe4d] text-white',
+                day_today: 'text-accent-foreground bg-accent/80'
               }}
             />
           ) : (
