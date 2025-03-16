@@ -187,7 +187,7 @@ export default function Page() {
                 cell: 'relative p-2 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-range-end)]:rounded-r-md',
                 day: 'absolute top-2 left-1/2 transform -translate-x-1/2 p-0 md:w-8 md:h-8 w-6 h-6 md:text-sm flex items-center justify-center rounded-full cursor-pointer text-xs',
                 day_selected: 'bg-[#ebbe4d] text-white',
-                day_today: 'text-accent-foreground bg-accent/80'
+                day_today: 'text-accent-foreground bg-[#f7f7f7] aria-selected:bg-[#ebbe4d] aria-selected:text-white'
               }}
             />
           ) : (
@@ -196,7 +196,7 @@ export default function Page() {
                 {currentWeek.map((day, index) => (
                   <div
                     key={index}
-                    className={`flex cursor-pointer flex-col border-r p-2 last:border-r-0 ${format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-accent/30' : ''} ${date && format(day, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd') ? 'rounded-xs ring-1 ring-emerald-600 ring-inset' : ''} `}
+                    className={`flex cursor-pointer flex-col border-r p-2 last:border-r-0 ${format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-accent/30' : ''} ${date && format(day, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd') ? 'rounded-xs ring-1 ring-[#ebbe4d]' : ''}`}
                     onClick={() => handleCellClick(day)}>
                     <div className='mb-2 text-center'>
                       <div className='text-muted-foreground text-xs'>{format(day, 'E', { locale: ja })}</div>
