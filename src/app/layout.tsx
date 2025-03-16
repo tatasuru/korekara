@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
+import { AppSidebar } from '@/components/layout/app-sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/shadcn-ui/sidebar';
+
 import './globals.css';
 
 const geistSans = Geist({
@@ -25,7 +28,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <SidebarProvider>
+          <AppSidebar />
+          <main className='flex w-full flex-col gap-2 p-2'>
+            <SidebarTrigger />
+            {children}
+          </main>
+        </SidebarProvider>
+      </body>
     </html>
   );
 }
