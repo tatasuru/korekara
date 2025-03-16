@@ -20,24 +20,35 @@ import { Calendar, Home, Inbox, Search, Settings } from 'lucide-react';
 const items = [
   {
     title: 'Calendar',
-    url: '#',
+    url: '/',
     icon: Calendar
+  },
+  {
+    title: 'Todos',
+    url: '/todos',
+    icon: Inbox
   }
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const currentPath = pathname.split('/')[1];
+  const currentPath = pathname === '/' ? 'calendar' : pathname.split('/')[1];
+
   return (
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>MENU</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className={cn(currentPath === '' && 'bg-secondary', 'rounded-md')}>
+            <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton
+                    asChild
+                    className={cn(
+                      'flex w-full items-center justify-start rounded-md px-4 py-2',
+                      currentPath === item.title.toLowerCase() ? 'bg-gray-100' : 'hover:bg-gray-100'
+                    )}>
                     <a href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>

@@ -4,7 +4,26 @@ import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/shadcn-ui/button';
 import { Calendar } from '@/components/shadcn-ui/calendar';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/shadcn-ui/dialog';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger
+} from '@/components/shadcn-ui/drawer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { addMonths, addWeeks, eachDayOfInterval, endOfWeek, format, startOfWeek, subMonths, subWeeks } from 'date-fns';
 import { ja } from 'date-fns/locale';
@@ -14,6 +33,8 @@ export default function Page() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
+  const [open, setOpen] = useState(false);
+  const isDesktop = useMediaQuery('(min-width: 768px)');
 
   // Generate week days when date changes
   useEffect(() => {
@@ -76,6 +97,12 @@ export default function Page() {
     setDate(new Date());
   };
 
+  // Open dialog
+  const openDialog = (day: Date) => {
+    console.log('Open dialog:', format(day, 'yyyy-MM-dd'));
+    setOpen(true);
+  };
+
   // Handle cell click event
   const handleCellClick = (day: Date) => {
     // Prevent deselection when clicking the same date twice
@@ -126,7 +153,6 @@ export default function Page() {
           </Button>
         </div>
       </div>
-
       <div className='flex flex-1 gap-x-2'>
         <div className='h-full w-full flex-1'>
           {viewMode === 'month' ? (
@@ -149,7 +175,7 @@ export default function Page() {
                 }
               }}
               onDayClick={(day) => {
-                console.log(day);
+                openDialog(day);
               }}
               classNames={{
                 months: 'flex w-full flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1',
@@ -159,7 +185,7 @@ export default function Page() {
                 head_row: '',
                 row: 'w-full mt-2 border-b',
                 cell: 'relative p-2 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-range-end)]:rounded-r-md',
-                day: 'absolute top-2 left-1/2 transform -translate-x-1/2 p-0 w-8 h-8 flex items-center justify-center rounded-full cursor-pointer',
+                day: 'absolute top-2 left-1/2 transform -translate-x-1/2 p-0 md:w-8 md:h-8 w-6 h-6 md:text-sm flex items-center justify-center rounded-full cursor-pointer text-xs',
                 day_selected: 'bg-emerald-600 text-white'
               }}
             />
@@ -186,6 +212,31 @@ export default function Page() {
           )}
         </div>
       </div>
+
+      {/* edit modal */}
+      {isDesktop ? (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className='sm:max-w-[425px]'>
+            <DialogHeader>
+              <DialogTitle>Edit profile</DialogTitle>
+              <DialogDescription>Make changes to your profile here. Click save when you're done.</DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <Drawer open={open} onOpenChange={setOpen}>
+          <DrawerContent className='h-full'>
+            <DrawerHeader>
+              <DrawerTitle>Are you absolutely sure?</DrawerTitle>
+              <DrawerDescription>This action cannot be undone.</DrawerDescription>
+            </DrawerHeader>
+            <DrawerFooter>
+              <Button>Submit</Button>
+              <DrawerClose>Cancel</DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      )}
     </div>
   );
 }
