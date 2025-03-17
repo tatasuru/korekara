@@ -269,7 +269,7 @@ export default function Page() {
                 {currentWeek.map((day, index) => (
                   <div
                     key={index}
-                    className={`flex cursor-pointer flex-col border-r p-2 last:border-r-0 ${format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-accent/30' : ''} ${date && format(day, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd') ? 'rounded-xs ring-1 ring-[#ebbe4d]' : ''}`}
+                    className={`flex cursor-pointer flex-col border-r p-2 last:border-r-0 ${format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-accent/30' : ''} ${date && format(day, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd') ? 'rounded-md ring-1 ring-[#ebbe4d]' : ''}`}
                     onClick={() => handleCellClick(day)}>
                     <div className='mb-2 text-center'>
                       <div className='text-muted-foreground text-xs'>{format(day, 'E', { locale: ja })}</div>
