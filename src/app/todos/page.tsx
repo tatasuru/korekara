@@ -8,9 +8,14 @@ import { Input } from '@/components/shadcn-ui/input';
 import { ScrollArea } from '@/components/shadcn-ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
 
+import { Calendar, Clock, Edit } from 'lucide-react';
+
 interface Todo {
   id: string;
   title: string;
+  order?: number;
+  dueDate?: string;
+  completed?: boolean;
 }
 
 export default function Todos() {
@@ -39,7 +44,8 @@ export default function Todos() {
         />
         <Button
           type='button'
-          className='cursor-pointer bg-[#ebbe4d] md:w-20'
+          variant={'main'}
+          className='cursor-pointer md:w-20'
           onClick={() => addTodo(inputValue)}
           disabled={!inputValue}>
           追加
@@ -60,13 +66,24 @@ export default function Todos() {
           {todos.map((todo) => (
             <Card
               key={todo.id}
-              className='mb-2 cursor-pointer rounded-md py-3 shadow-none last:mb-0'
+              className='mb-2 cursor-pointer gap-1 rounded-md py-3 shadow-none last:mb-0'
               onClick={() => {
                 console.log(todo.id);
               }}>
-              <CardHeader>
+              <CardHeader className='flex items-center justify-between gap-2'>
                 <CardTitle>{todo.title}</CardTitle>
+                <div className='flex gap-2'>
+                  <Button type='button' size={'xs'} variant={'outline'} className='cursor-pointer'>
+                    <Edit size={8} />
+                  </Button>
+                  <Button size={'xs'} variant={'main'} className='cursor-pointer'>
+                    完了
+                  </Button>
+                </div>
               </CardHeader>
+              <CardFooter>
+                <CardDescription>期限：{todo.dueDate ? todo.dueDate : 'なし'}</CardDescription>
+              </CardFooter>
             </Card>
           ))}
         </ScrollArea>

@@ -170,7 +170,7 @@ export default function Page() {
             variant='outline'
             size='sm'
             onClick={goBackToday}
-            className='cursor-pointer border-[#ebbe4d] text-xs text-[#ebbe4d] hover:bg-[#ebbe4d] hover:text-white md:text-sm'
+            className='border-main text-main hover:bg-main cursor-pointer text-xs hover:text-white md:text-sm'
             disabled={!date || format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')}>
             {viewMode === 'week' ? '今週' : '今月'}へ戻る
           </Button>
@@ -225,8 +225,8 @@ export default function Page() {
                 row: 'w-full mt-2 border-b',
                 cell: 'relative p-2 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-range-end)]:rounded-r-md',
                 day: 'absolute top-2 left-1/2 transform -translate-x-1/2 p-0 md:w-8 md:h-8 w-6 h-6 md:text-sm flex items-center justify-center rounded-full cursor-pointer text-xs',
-                day_selected: 'bg-[#ebbe4d] text-white',
-                day_today: 'text-accent-foreground bg-[#f7f7f7] aria-selected:bg-[#ebbe4d] aria-selected:text-white'
+                day_selected: 'bg-main text-white',
+                day_today: 'text-accent-foreground bg-[#f7f7f7] aria-selected:bg-main aria-selected:text-white'
               }}
               components={{
                 Day: (props) => {
@@ -238,7 +238,7 @@ export default function Page() {
                         <span
                           className={
                             format(props.date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
-                              ? 'inline-flex size-5 items-center justify-center rounded-full bg-[#ebbe4d] text-[10px] font-bold text-white md:text-xs'
+                              ? 'bg-main inline-flex size-5 items-center justify-center rounded-full text-[10px] font-bold text-white md:text-xs'
                               : 'text-primary inline-flex size-5 items-center justify-center rounded-full text-[10px] md:text-xs'
                           }>
                           {format(props.date, 'd')}
@@ -249,7 +249,7 @@ export default function Page() {
                           if (format(props.date, 'yyyy-MM-dd') === event.date) {
                             return (
                               <div
-                                className='mt-1 truncate rounded bg-[#ebbe4d] px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                                className='bg-main mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
                                 key={event.id}>
                                 {event.title}
                               </div>
@@ -269,7 +269,7 @@ export default function Page() {
                 {currentWeek.map((day, index) => (
                   <div
                     key={index}
-                    className={`flex cursor-pointer flex-col border-r p-2 last:border-r-0 ${format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-accent/30' : ''} ${date && format(day, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd') ? 'rounded-md ring-1 ring-[#ebbe4d]' : ''}`}
+                    className={`flex cursor-pointer flex-col border-r p-2 last:border-r-0 ${format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-accent/30' : ''} ${date && format(day, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd') ? 'ring-main rounded-md ring-1' : ''}`}
                     onClick={() => handleCellClick(day)}>
                     <div className='mb-2 text-center'>
                       <div className='text-muted-foreground text-xs'>{format(day, 'E', { locale: ja })}</div>
@@ -294,14 +294,14 @@ export default function Page() {
             <DialogTitle className='text-sm font-bold'>予定を編集</DialogTitle>
             <Input
               placeholder='タイトル'
-              className='w-full rounded-none border-0 shadow-none ring-0 selection:bg-[#ebbe4d]/80 selection:text-white focus:shadow-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0 md:text-2xl'
+              className='selection:bg-main/80 w-full rounded-none border-0 shadow-none ring-0 selection:text-white focus:shadow-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0 md:text-2xl'
             />
 
             <Separator />
 
             <div>
               <div className='flex items-center space-x-2'>
-                <Switch id='all-day' className='data-[state=checked]:bg-[#ebbe4d]' />
+                <Switch id='all-day' className='data-[state=checked]:bg-main' />
                 <Label htmlFor='all-day'>終日</Label>
               </div>
             </div>
@@ -335,14 +335,14 @@ export default function Page() {
             <div className='grid gap-4 p-4'>
               <Input
                 placeholder='タイトル'
-                className='w-full rounded-none border-0 text-2xl shadow-none ring-0 selection:bg-[#ebbe4d]/80 selection:text-white focus:shadow-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0'
+                className='selection:bg-main/80 w-full rounded-none border-0 text-2xl shadow-none ring-0 selection:text-white focus:shadow-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0'
               />
 
               <Separator />
 
               <div>
                 <div className='flex items-center space-x-2'>
-                  <Switch id='all-day' className='data-[state=checked]:bg-[#ebbe4d]' />
+                  <Switch id='all-day' className='data-[state=checked]:bg-main' />
                   <Label htmlFor='all-day'>終日</Label>
                 </div>
               </div>
