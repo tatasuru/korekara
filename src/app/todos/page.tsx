@@ -1,8 +1,19 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+
 import { Button } from '@/components/shadcn-ui/button';
 import { Input } from '@/components/shadcn-ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
 
 export default function Todos() {
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [todos, setTodos] = useState([]);
+
+  const handleTabChange = (value: string) => {
+    setViewMode(value as 'list' | 'map');
+  };
+
   return (
     <div className='flex flex-col gap-4'>
       <div className='flex w-full items-center gap-2'>
@@ -11,7 +22,7 @@ export default function Todos() {
           追加
         </Button>
       </div>
-      <Tabs defaultValue='list' className='md:w-[200px]'>
+      <Tabs defaultValue='list' value={viewMode} onValueChange={handleTabChange} className='md:w-[200px]'>
         <TabsList className='grid w-full grid-cols-2'>
           <TabsTrigger value='list' className='cursor-pointer text-xs md:text-sm'>
             リスト表示
@@ -21,6 +32,7 @@ export default function Todos() {
           </TabsTrigger>
         </TabsList>
       </Tabs>
+      <div>{viewMode === 'list' ? <div></div> : <div>MAP</div>}</div>
     </div>
   );
 }

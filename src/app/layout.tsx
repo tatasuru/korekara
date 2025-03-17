@@ -32,7 +32,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <SidebarProvider>
           <AppSidebar />
-          <main className='flex h-[calc(100svh-56px)] w-full flex-col gap-2 p-2 md:h-auto'>
+          <main className='flex h-[calc(100svh-75px)] w-full flex-col gap-2 p-4 md:h-auto md:p-2'>
             <SidebarTrigger className='hidden md:flex' />
             {children}
           </main>

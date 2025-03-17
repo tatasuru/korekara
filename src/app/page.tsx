@@ -207,7 +207,7 @@ export default function Page() {
                   setDate(newDate);
                 }
               }}
-              className='flex h-full w-full'
+              className='flex h-full w-full p-0 md:p-3'
               locale={ja}
               weekStartsOn={1}
               formatters={{
