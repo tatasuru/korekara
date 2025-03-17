@@ -32,7 +32,7 @@ export function AppFooter({ className }: { className: string }) {
   return (
     <div
       className={cn(
-        'fixed right-0 bottom-0 left-0 z-50 flex h-14 w-full items-center justify-around border-t border-gray-100 bg-white/95 px-2 shadow-sm backdrop-blur-sm',
+        'fixed right-0 bottom-0 left-0 z-50 flex h-14 w-full items-center justify-around border-t border-gray-100 bg-white/95 px-2 py-2 shadow-sm backdrop-blur-sm',
         className
       )}>
       <NavButton
@@ -75,9 +75,6 @@ function NavButton({ icon, title, url, isActive, onClick, badge }: NavButtonProp
           )}
         </div>
         <span className={cn('text-[10px] font-medium', isActive ? 'font-semibold' : '')}>{title}</span>
-        {isActive && (
-          <div className='absolute bottom-0 h-0.5 w-full rounded-t-full bg-amber-500 transition-all duration-300' />
-        )}
       </Link>
     </Button>
   );
