@@ -6,8 +6,10 @@ import { Button } from '@/components/shadcn-ui/button';
 import { Calendar } from '@/components/shadcn-ui/calendar';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger
@@ -22,11 +24,16 @@ import {
   DrawerTitle,
   DrawerTrigger
 } from '@/components/shadcn-ui/drawer';
+import { Input } from '@/components/shadcn-ui/input';
+import { Label } from '@/components/shadcn-ui/label';
+import { Separator } from '@/components/shadcn-ui/separator';
+import { Switch } from '@/components/shadcn-ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 import { addMonths, addWeeks, eachDayOfInterval, endOfWeek, format, startOfWeek, subMonths, subWeeks } from 'date-fns';
-import { ja } from 'date-fns/locale';
+import { ja, se } from 'date-fns/locale';
+import { Copy } from 'lucide-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function Page() {
@@ -34,6 +41,20 @@ export default function Page() {
   const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
   const [open, setOpen] = useState(false);
+  const [events, setEvents] = useState([
+    {
+      id: 1,
+      title: 'Event 1',
+      date: '2025-03-11'
+    },
+    {
+      id: 2,
+      title: 'Event 2',
+      date: '2025-03-12'
+    }
+  ]);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
   // Generate week days when date changes
@@ -99,7 +120,7 @@ export default function Page() {
 
   // Open dialog
   const openDialog = (day: Date) => {
-    console.log('Open dialog:', format(day, 'yyyy-MM-dd'));
+    setSelectedDate(day);
     setOpen(true);
   };
 
@@ -118,16 +139,28 @@ export default function Page() {
     // showEventsForDay(day);
   };
 
+  // set events
+  const setEvent = ({ title, date }: { title: string; date: string }) => {
+    setEvents([
+      ...events,
+      {
+        id: 3,
+        title,
+        date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : date
+      }
+    ]);
+  };
+
   return (
     <div className='flex h-full w-full flex-col'>
       <div className='mb-4 flex flex-col items-center justify-between gap-3 md:mb-2 md:flex-row md:gap-0'>
         <div className='flex w-full items-center justify-between gap-4 md:w-auto'>
           <Tabs defaultValue='week' value={viewMode} onValueChange={handleTabChange} className='w-[200px]'>
             <TabsList className='grid w-full grid-cols-2'>
-              <TabsTrigger value='month' className='cursor-pointer'>
+              <TabsTrigger value='month' className='cursor-pointer text-xs md:text-sm'>
                 月表示
               </TabsTrigger>
-              <TabsTrigger value='week' className='cursor-pointer'>
+              <TabsTrigger value='week' className='cursor-pointer text-xs md:text-sm'>
                 週表示
               </TabsTrigger>
             </TabsList>
@@ -137,18 +170,26 @@ export default function Page() {
             variant='outline'
             size='sm'
             onClick={goBackToday}
-            className='cursor-pointer border-[#ebbe4d] text-[#ebbe4d] hover:bg-[#ebbe4d] hover:text-white'
+            className='cursor-pointer border-[#ebbe4d] text-xs text-[#ebbe4d] hover:bg-[#ebbe4d] hover:text-white md:text-sm'
             disabled={!date || format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')}>
-            今日へ戻る
+            {viewMode === 'week' ? '今週' : '今月'}へ戻る
           </Button>
         </div>
 
         <div className='flex w-full items-center justify-between gap-4 md:w-auto'>
-          <Button variant='outline' size='icon' onClick={() => navigate('prev')} className='cursor-pointer'>
+          <Button
+            variant='outline'
+            size='icon'
+            onClick={() => navigate('prev')}
+            className='size-6 cursor-pointer md:size-9'>
             <ChevronLeft className='h-4 w-4' />
           </Button>
           <div className='text-sm font-medium'>{viewMode === 'week' ? formatWeekRange() : formatMonthRange()}</div>
-          <Button variant='outline' size='icon' onClick={() => navigate('next')} className='cursor-pointer'>
+          <Button
+            variant='outline'
+            size='icon'
+            onClick={() => navigate('next')}
+            className='size-6 cursor-pointer md:size-9'>
             <ChevronRight className='h-4 w-4' />
           </Button>
         </div>
@@ -159,6 +200,7 @@ export default function Page() {
             <Calendar
               mode='single'
               selected={date}
+              month={date}
               onSelect={(newDate) => {
                 // Prevent deselection when clicking the same date twice
                 if (newDate !== undefined || !date) {
@@ -174,9 +216,6 @@ export default function Page() {
                   return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
                 }
               }}
-              onDayClick={(day) => {
-                openDialog(day);
-              }}
               classNames={{
                 months: 'flex w-full flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1',
                 caption: 'hidden',
@@ -189,9 +228,43 @@ export default function Page() {
                 day_selected: 'bg-[#ebbe4d] text-white',
                 day_today: 'text-accent-foreground bg-[#f7f7f7] aria-selected:bg-[#ebbe4d] aria-selected:text-white'
               }}
+              components={{
+                Day: (props) => {
+                  return (
+                    <div
+                      className='grid h-full w-full cursor-pointer grid-rows-[auto_1fr] text-xs'
+                      onClick={() => openDialog(props.date)}>
+                      <div className='flex items-center justify-center'>
+                        <span
+                          className={
+                            format(props.date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
+                              ? 'inline-flex size-5 items-center justify-center rounded-full bg-[#ebbe4d] text-[10px] font-bold text-white md:text-xs'
+                              : 'text-primary inline-flex size-5 items-center justify-center rounded-full text-[10px] md:text-xs'
+                          }>
+                          {format(props.date, 'd')}
+                        </span>
+                      </div>
+                      <div className='min-h-[30px] overflow-hidden'>
+                        {events.map((event) => {
+                          if (format(props.date, 'yyyy-MM-dd') === event.date) {
+                            return (
+                              <div
+                                className='mt-1 truncate rounded bg-[#ebbe4d] px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                                key={event.id}>
+                                {event.title}
+                              </div>
+                            );
+                          }
+                          return null;
+                        })}
+                      </div>
+                    </div>
+                  );
+                }
+              }}
             />
           ) : (
-            <div className='h-full w-full rounded-md border'>
+            <div className='h-[calc(100%-8px)] w-full rounded-md border md:h-full'>
               <div className='grid h-full grid-cols-7'>
                 {currentWeek.map((day, index) => (
                   <div
@@ -217,23 +290,79 @@ export default function Page() {
       {/* edit modal */}
       {isDesktop ? (
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className='sm:max-w-[425px]'>
-            <DialogHeader>
-              <DialogTitle>Edit profile</DialogTitle>
-              <DialogDescription>Make changes to your profile here. Click save when you're done.</DialogDescription>
-            </DialogHeader>
+          <DialogContent className='p-4 sm:max-w-md'>
+            <DialogTitle className='text-sm font-bold'>予定を編集</DialogTitle>
+            <Input
+              placeholder='タイトル'
+              className='w-full rounded-none border-0 shadow-none ring-0 selection:bg-[#ebbe4d]/80 selection:text-white focus:shadow-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0 md:text-2xl'
+            />
+
+            <Separator />
+
+            <div>
+              <div className='flex items-center space-x-2'>
+                <Switch id='all-day' className='data-[state=checked]:bg-[#ebbe4d]' />
+                <Label htmlFor='all-day'>終日</Label>
+              </div>
+            </div>
+
+            <DialogFooter className=''>
+              <DialogClose asChild>
+                <Button type='button' variant='secondary'>
+                  キャンセル
+                </Button>
+              </DialogClose>
+              <Button
+                type='button'
+                variant='default'
+                onClick={() => {
+                  setEvent({ title: 'Event 3', date: '2025-03-13' });
+                  setOpen(false);
+                }}>
+                保存する
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       ) : (
         <Drawer open={open} onOpenChange={setOpen}>
           <DrawerContent className='h-full'>
             <DrawerHeader>
-              <DrawerTitle>Are you absolutely sure?</DrawerTitle>
-              <DrawerDescription>This action cannot be undone.</DrawerDescription>
+              <DrawerTitle className='text-sm font-bold'>予定を編集</DrawerTitle>
+              {/* <DrawerDescription>This action cannot be undone.</DrawerDescription> */}
             </DrawerHeader>
+
+            <div className='grid gap-4 p-4'>
+              <Input
+                placeholder='タイトル'
+                className='w-full rounded-none border-0 text-2xl shadow-none ring-0 selection:bg-[#ebbe4d]/80 selection:text-white focus:shadow-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0'
+              />
+
+              <Separator />
+
+              <div>
+                <div className='flex items-center space-x-2'>
+                  <Switch id='all-day' className='data-[state=checked]:bg-[#ebbe4d]' />
+                  <Label htmlFor='all-day'>終日</Label>
+                </div>
+              </div>
+            </div>
+
             <DrawerFooter>
-              <Button>Submit</Button>
-              <DrawerClose>Cancel</DrawerClose>
+              <Button
+                type='button'
+                variant='default'
+                onClick={() => {
+                  setEvent({ title: 'Event 3', date: '2025-03-13' });
+                  setOpen(false);
+                }}>
+                保存する
+              </Button>
+              <DrawerClose asChild>
+                <Button type='button' variant='outline'>
+                  Cancel
+                </Button>
+              </DrawerClose>
             </DrawerFooter>
           </DrawerContent>
         </Drawer>

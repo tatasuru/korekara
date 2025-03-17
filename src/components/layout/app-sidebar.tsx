@@ -12,6 +12,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem
 } from '@/components/shadcn-ui/sidebar';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 
 import { Calendar, Home, Inbox, Search, Settings } from 'lucide-react';

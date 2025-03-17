@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
+import { AppFooter } from '@/components/layout/app-footer';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { SidebarProvider, SidebarTrigger } from '@/components/shadcn-ui/sidebar';
 
@@ -31,10 +32,11 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <SidebarProvider>
           <AppSidebar />
-          <main className='flex w-full flex-col gap-2 p-2'>
-            <SidebarTrigger />
+          <main className='flex h-[calc(100vh-56px)] w-full flex-col gap-2 p-2 md:h-auto'>
+            <SidebarTrigger className='hidden md:flex' />
             {children}
           </main>
+          <AppFooter className='flex md:hidden' />
         </SidebarProvider>
       </body>
     </html>
