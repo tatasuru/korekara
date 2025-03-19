@@ -5,6 +5,7 @@ import React from 'react';
 import { Button } from '@/components/shadcn-ui/button';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/shadcn-ui/card';
 import { Checkbox } from '@/components/shadcn-ui/checkbox';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 
 import { Edit, Trash } from 'lucide-react';
@@ -13,19 +14,22 @@ interface Todo {
   id: string;
   title: string;
   order?: number;
-  dueDate?: string;
+  due_date?: string;
   completed?: boolean;
 }
 
 export function TodoCard({
   todo,
   deleteTodo,
-  updateTodoStatus
+  updateTodoStatus,
+  editTodo
 }: {
   todo: Todo;
   deleteTodo: (id: string) => void;
   updateTodoStatus: (id: string, completed: boolean) => void;
+  editTodo: (id: string) => void;
 }) {
+  const isDesktop = useMediaQuery('(min-width: 768px)');
   return (
     <Card key={todo.id} className='mb-2 cursor-pointer gap-1 rounded-md py-3 shadow-none last:mb-0'>
       <CardHeader className='flex items-center justify-between gap-2'>
@@ -43,16 +47,25 @@ export function TodoCard({
           </CardTitle>
         </div>
         <div className='flex gap-2'>
-          <Button type='button' size={'xs'} variant={'outline'} className='cursor-pointer'>
+          <Button
+            type='button'
+            size={'xs'}
+            variant={'outline'}
+            className={cn('cursor-pointer', isDesktop ? 'size-6' : 'size-6')}
+            onClick={() => editTodo(todo.id)}>
             <Edit size={8} />
           </Button>
-          <Button size={'xs'} variant={'destructive'} className='cursor-pointer' onClick={() => deleteTodo(todo.id)}>
+          <Button
+            size={'xs'}
+            variant={'destructive'}
+            className={cn('cursor-pointer', isDesktop ? 'size-6' : 'size-6')}
+            onClick={() => deleteTodo(todo.id)}>
             <Trash size={8} />
           </Button>
         </div>
       </CardHeader>
       <CardFooter>
-        <CardDescription>期限：{todo.dueDate ? todo.dueDate : 'なし'}</CardDescription>
+        <CardDescription>期限：{todo.due_date ? todo.due_date.replace(/-/g, '/') : 'なし'}</CardDescription>
       </CardFooter>
     </Card>
   );
