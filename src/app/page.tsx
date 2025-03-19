@@ -290,7 +290,12 @@ export default function Page() {
       {/* edit modal */}
       {isDesktop ? (
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className='p-4 sm:max-w-md'>
+          <DialogContent
+            className='p-4 sm:max-w-md'
+            onPointerDownOutside={(e) => {
+              e.preventDefault();
+              setOpen(true);
+            }}>
             <DialogTitle className='text-sm font-bold'>予定を編集</DialogTitle>
             <Input
               placeholder='タイトル'
@@ -326,10 +331,10 @@ export default function Page() {
         </Dialog>
       ) : (
         <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent className='h-full'>
-            <DrawerHeader>
-              <DrawerTitle className='text-sm font-bold'>予定を編集</DrawerTitle>
-              {/* <DrawerDescription>This action cannot be undone.</DrawerDescription> */}
+          <DrawerContent className=''>
+            <DrawerHeader className='p-0'>
+              <DrawerTitle className='text-sm font-bold'></DrawerTitle>
+              <DrawerDescription></DrawerDescription>
             </DrawerHeader>
 
             <div className='grid gap-4 p-4'>
@@ -351,7 +356,7 @@ export default function Page() {
             <DrawerFooter>
               <Button
                 type='button'
-                variant='default'
+                variant='main'
                 onClick={() => {
                   setEvent({ title: 'Event 3', date: '2025-03-13' });
                   setOpen(false);

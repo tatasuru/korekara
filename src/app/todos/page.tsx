@@ -175,7 +175,12 @@ export default function Todos() {
       {/* edit modal */}
       {isDesktop ? (
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className='p-4 sm:max-w-md'>
+          <DialogContent
+            className='p-4 sm:max-w-md'
+            onPointerDownOutside={(e) => {
+              e.preventDefault();
+              setOpen(true);
+            }}>
             <DialogTitle className='text-sm font-bold'>編集</DialogTitle>
             <Input
               value={selectedTodo?.title}
@@ -251,10 +256,10 @@ export default function Todos() {
         </Dialog>
       ) : (
         <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent className='h-full'>
-            <DrawerHeader>
-              <DrawerTitle className='text-sm font-bold'>編集</DrawerTitle>
-              {/* <DrawerDescription>This action cannot be undone.</DrawerDescription> */}
+          <DrawerContent className=''>
+            <DrawerHeader className='p-0'>
+              <DrawerTitle className='text-sm font-bold'></DrawerTitle>
+              <DrawerDescription></DrawerDescription>
             </DrawerHeader>
 
             <div className='grid gap-4 p-4'>

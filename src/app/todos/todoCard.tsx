@@ -32,7 +32,7 @@ export function TodoCard({
   const isDesktop = useMediaQuery('(min-width: 768px)');
   return (
     <Card key={todo.id} className='mb-2 cursor-pointer gap-1 rounded-md py-3 shadow-none last:mb-0'>
-      <CardHeader className='flex items-center justify-between gap-2'>
+      <CardHeader className='flex items-center justify-between gap-2 px-4 md:px-6'>
         <div className='flex items-center gap-2'>
           <Checkbox
             className='data-[state=checked]:bg-main dark:data-[state=checked]:bg-main data-[state=checked]:border-main cursor-pointer data-[state=checked]:text-white'
@@ -64,7 +64,7 @@ export function TodoCard({
           </Button>
         </div>
       </CardHeader>
-      <CardFooter>
+      <CardFooter className='px-4 md:px-6'>
         <CardDescription>期限：{todo.due_date ? todo.due_date.replace(/-/g, '/') : 'なし'}</CardDescription>
       </CardFooter>
     </Card>
