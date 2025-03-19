@@ -1,0 +1,59 @@
+'use client';
+
+import React from 'react';
+
+import { Button } from '@/components/shadcn-ui/button';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/shadcn-ui/card';
+import { Checkbox } from '@/components/shadcn-ui/checkbox';
+import { cn } from '@/lib/utils';
+
+import { Edit, Trash } from 'lucide-react';
+
+interface Todo {
+  id: string;
+  title: string;
+  order?: number;
+  dueDate?: string;
+  completed?: boolean;
+}
+
+export function TodoCard({
+  todo,
+  deleteTodo,
+  updateTodoStatus
+}: {
+  todo: Todo;
+  deleteTodo: (id: string) => void;
+  updateTodoStatus: (id: string, completed: boolean) => void;
+}) {
+  return (
+    <Card key={todo.id} className='mb-2 cursor-pointer gap-1 rounded-md py-3 shadow-none last:mb-0'>
+      <CardHeader className='flex items-center justify-between gap-2'>
+        <div className='flex items-center gap-2'>
+          <Checkbox
+            className='data-[state=checked]:bg-main dark:data-[state=checked]:bg-main data-[state=checked]:border-main cursor-pointer data-[state=checked]:text-white'
+            checked={todo.completed}
+            onCheckedChange={() => updateTodoStatus(todo.id, !todo.completed)}
+          />
+          <CardTitle
+            className={cn(
+              todo.completed ? 'text-gray-400 line-through dark:text-gray-500' : 'text-gray-800 dark:text-gray-200'
+            )}>
+            {todo.title}
+          </CardTitle>
+        </div>
+        <div className='flex gap-2'>
+          <Button type='button' size={'xs'} variant={'outline'} className='cursor-pointer'>
+            <Edit size={8} />
+          </Button>
+          <Button size={'xs'} variant={'destructive'} className='cursor-pointer' onClick={() => deleteTodo(todo.id)}>
+            <Trash size={8} />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardFooter>
+        <CardDescription>期限：{todo.dueDate ? todo.dueDate : 'なし'}</CardDescription>
+      </CardFooter>
+    </Card>
+  );
+}

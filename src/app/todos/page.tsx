@@ -2,13 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 
+import { TodoCard } from '@/app/todos/todoCard';
 import { Button } from '@/components/shadcn-ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/shadcn-ui/card';
+import { Checkbox } from '@/components/shadcn-ui/checkbox';
 import { Input } from '@/components/shadcn-ui/input';
 import { ScrollArea } from '@/components/shadcn-ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
-
-import { Calendar, Clock, Edit } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
+import { createClient } from '@/utils/supabase/client';
 
 interface Todo {
   id: string;
@@ -21,20 +22,67 @@ interface Todo {
 export default function Todos() {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState<string>('');
+  const supabase = createClient();
 
   const handleTabChange = (value: string) => {
     setViewMode(value as 'list' | 'map');
   };
 
-  function addTodo(title: string) {
-    setTodos((prev) => [...prev, { id: Math.random().toString(), title }]);
-    setInputValue('');
+  async function fetchTodos() {
+    const { data, error } = await supabase.from('todos').select('*').order('order', { ascending: false });
+    if (error) {
+      console.error(error);
+    } else {
+      setTodos(data || []);
+    }
   }
+
+  async function addTodo() {
+    const { data, error } = await supabase
+      .from('todos')
+      .insert({
+        title: inputValue,
+        order: todos.length + 1,
+        due_date: new Date().toISOString(),
+        completed: false
+      })
+      .select('*')
+      .order('id', { ascending: false });
+    if (error) {
+      console.error(error);
+    } else {
+      setTodos([data![0], ...todos]);
+      setInputValue('');
+    }
+  }
+
+  async function updateTodoStatus(id: string, completed: boolean) {
+    const { error } = await supabase.from('todos').update({ completed }).match({ id });
+    if (error) {
+      console.error(error);
+    } else {
+      setTodos((prev) => prev.map((todo) => (todo.id === id ? { ...todo, completed } : todo)));
+    }
+  }
+
+  async function deleteTodo(id: string) {
+    const { error } = await supabase.from('todos').delete().match({ id });
+    console.log(id);
+    if (error) {
+      console.error(error);
+    } else {
+      setTodos((prev) => prev.filter((todo) => todo.id !== id));
+    }
+  }
+
+  useEffect(() => {
+    fetchTodos();
+  }, []);
 
   return (
     <div className='grid h-full grid-rows-[auto_auto_1fr] gap-4 md:flex md:grid-cols-2 md:flex-col'>
-      <div className='flex w-full items-center gap-2 md:w-1/2'>
+      <div className='flex w-full items-center gap-2 md:max-w-2xl'>
         <Input
           type='text'
           placeholder='やることを入力...'
@@ -46,8 +94,8 @@ export default function Todos() {
           type='button'
           variant={'main'}
           className='cursor-pointer md:w-20'
-          onClick={() => addTodo(inputValue)}
-          disabled={!inputValue}>
+          disabled={!inputValue}
+          onClick={addTodo}>
           追加
         </Button>
       </div>
@@ -62,29 +110,9 @@ export default function Todos() {
         </TabsList>
       </Tabs>
       {viewMode === 'list' ? (
-        <ScrollArea className='grid h-[calc(100svh-210px)] w-full md:h-[calc(100svh-160px)] md:w-1/2'>
+        <ScrollArea className='grid h-[calc(100svh-210px)] w-full md:h-[calc(100svh-160px)] md:max-w-2xl'>
           {todos.map((todo) => (
-            <Card
-              key={todo.id}
-              className='mb-2 cursor-pointer gap-1 rounded-md py-3 shadow-none last:mb-0'
-              onClick={() => {
-                console.log(todo.id);
-              }}>
-              <CardHeader className='flex items-center justify-between gap-2'>
-                <CardTitle>{todo.title}</CardTitle>
-                <div className='flex gap-2'>
-                  <Button type='button' size={'xs'} variant={'outline'} className='cursor-pointer'>
-                    <Edit size={8} />
-                  </Button>
-                  <Button size={'xs'} variant={'main'} className='cursor-pointer'>
-                    完了
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardFooter>
-                <CardDescription>期限：{todo.dueDate ? todo.dueDate : 'なし'}</CardDescription>
-              </CardFooter>
-            </Card>
+            <TodoCard key={todo.id} todo={todo} deleteTodo={deleteTodo} updateTodoStatus={updateTodoStatus} />
           ))}
         </ScrollArea>
       ) : (
