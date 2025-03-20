@@ -35,7 +35,7 @@ export function TodoCard({
   return (
     <Card key={todo.id} className='mb-2 cursor-pointer gap-1 rounded-md py-3 shadow-none last:mb-0'>
       <CardHeader className='flex items-center justify-between gap-2 px-4 md:px-6'>
-        <div className='flex items-center gap-2'>
+        <div className='flex w-4/5 items-center gap-2'>
           <Checkbox
             className='data-[state=checked]:bg-main dark:data-[state=checked]:bg-main data-[state=checked]:border-main cursor-pointer data-[state=checked]:text-white'
             checked={todo.completed}
@@ -43,6 +43,7 @@ export function TodoCard({
           />
           <CardTitle
             className={cn(
+              'truncate text-sm',
               todo.completed ? 'text-gray-400 line-through dark:text-gray-500' : 'text-gray-800 dark:text-gray-200'
             )}>
             {todo.title}
