@@ -220,7 +220,7 @@ export default function Todos() {
                     {selectedTodo?.due_date ? (
                       format(new Date(selectedTodo.due_date), 'PPP', { locale: ja })
                     ) : (
-                      <span>Pick a dueDate</span>
+                      <span>期限を決める</span>
                     )}
                   </Button>
                 </PopoverTrigger>

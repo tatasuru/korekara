@@ -67,8 +67,8 @@ export function TodoCard({
           </Button>
         </div>
       </CardHeader>
-      <CardFooter className='gap-2 px-4 md:px-6'>
-        <Badge className='rounded-full text-xs' variant={todo.priority}>
+      <CardFooter className='items-center gap-2 px-4 md:px-6'>
+        <Badge className='rounded-full px-1.5 py-1.5 text-[10px] leading-1' variant={todo.priority}>
           {todo.priority?.toLocaleUpperCase()}
         </Badge>
         <CardDescription>期限：{todo.due_date ? todo.due_date.replace(/-/g, '/') : 'なし'}</CardDescription>
