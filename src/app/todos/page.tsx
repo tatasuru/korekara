@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { TodoCard } from '@/app/todos/todoCard';
+import { Badge } from '@/components/shadcn-ui/badge';
 import { Button } from '@/components/shadcn-ui/button';
 import { Calendar } from '@/components/shadcn-ui/calendar';
 import {
@@ -29,7 +30,15 @@ import { Input } from '@/components/shadcn-ui/input';
 import { Label } from '@/components/shadcn-ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn-ui/popover';
 import { ScrollArea } from '@/components/shadcn-ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/shadcn-ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue
+} from '@/components/shadcn-ui/select';
 import { Separator } from '@/components/shadcn-ui/separator';
 import { Switch } from '@/components/shadcn-ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
@@ -47,6 +56,7 @@ interface Todo {
   order?: number;
   due_date?: string;
   completed?: boolean;
+  priority?: 'low' | 'medium' | 'high';
 }
 
 export default function Todos() {
@@ -79,7 +89,8 @@ export default function Todos() {
         title: inputValue,
         order: todos.length + 1,
         due_date: null,
-        completed: false
+        completed: false,
+        priority: 'low'
       })
       .select('*')
       .order('id', { ascending: false });
@@ -100,12 +111,12 @@ export default function Todos() {
     }
   }
 
-  async function updateTodoContent(id: string, title: string, due_date?: string) {
-    const { error } = await supabase.from('todos').update({ title, due_date }).match({ id });
+  async function updateTodoContent(id: string, title: string, due_date?: string, priority?: 'low' | 'medium' | 'high') {
+    const { error } = await supabase.from('todos').update({ title, due_date, priority }).match({ id });
     if (error) {
       console.error(error);
     } else {
-      setTodos((prev) => prev.map((todo) => (todo.id === id ? { ...todo, title, due_date } : todo)));
+      setTodos((prev) => prev.map((todo) => (todo.id === id ? { ...todo, title, due_date, priority } : todo)));
     }
   }
 
@@ -235,6 +246,50 @@ export default function Todos() {
               </Popover>
             </div>
 
+            <div className='flex flex-col gap-2'>
+              <Label>優先度</Label>
+              <Select
+                onValueChange={(value) =>
+                  selectedTodo &&
+                  setSelectedTodo({
+                    ...selectedTodo,
+                    priority: value as 'low' | 'medium' | 'high'
+                  })
+                }>
+                <SelectTrigger className='w-full cursor-pointer'>
+                  <div className='flex flex-1'>
+                    {selectedTodo?.priority ? (
+                      <Badge className='rounded-full' variant={selectedTodo.priority}>
+                        {selectedTodo.priority.toUpperCase()}
+                      </Badge>
+                    ) : (
+                      <span className='text-muted-foreground'>優先度を選択</span>
+                    )}
+                  </div>
+                  {/* <SelectValue className='hidden' /> */}
+                </SelectTrigger>
+                <SelectContent className='w-full'>
+                  <SelectGroup>
+                    <SelectItem value='high'>
+                      <Badge className='rounded-full' variant={'high'}>
+                        HIGH
+                      </Badge>
+                    </SelectItem>
+                    <SelectItem value='medium'>
+                      <Badge className='rounded-full' variant={'medium'}>
+                        MEDIUM
+                      </Badge>
+                    </SelectItem>
+                    <SelectItem value='low'>
+                      <Badge className='rounded-full' variant={'low'}>
+                        LOW
+                      </Badge>
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
             <DialogFooter className=''>
               <DialogClose asChild>
                 <Button type='button' variant='secondary'>
@@ -244,10 +299,16 @@ export default function Todos() {
               <Button
                 type='button'
                 variant='main'
+                disabled={!selectedTodo?.title}
                 onClick={() => {
                   setOpen(false);
-                  console.log(selectedTodo?.due_date);
-                  selectedTodo && updateTodoContent(selectedTodo.id, selectedTodo.title, selectedTodo.due_date);
+                  selectedTodo &&
+                    updateTodoContent(
+                      selectedTodo.id,
+                      selectedTodo.title,
+                      selectedTodo.due_date,
+                      selectedTodo.priority
+                    );
                 }}>
                 保存する
               </Button>
@@ -290,7 +351,7 @@ export default function Todos() {
                       {selectedTodo?.due_date ? (
                         format(new Date(selectedTodo.due_date), 'PPP', { locale: ja })
                       ) : (
-                        <span>Pick a dueDate</span>
+                        <span>日付を選ぶ</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -315,16 +376,67 @@ export default function Todos() {
                   </PopoverContent>
                 </Popover>
               </div>
+
+              <div className='flex flex-col gap-2'>
+                <Label>優先度</Label>
+                <Select
+                  onValueChange={(value) =>
+                    selectedTodo &&
+                    setSelectedTodo({
+                      ...selectedTodo,
+                      priority: value as 'low' | 'medium' | 'high'
+                    })
+                  }>
+                  <SelectTrigger className='w-full cursor-pointer'>
+                    <div className='flex flex-1'>
+                      {selectedTodo?.priority ? (
+                        <Badge className='rounded-full' variant={selectedTodo.priority}>
+                          {selectedTodo.priority.toUpperCase()}
+                        </Badge>
+                      ) : (
+                        <span className='text-muted-foreground'>優先度を選択</span>
+                      )}
+                    </div>
+                    {/* <SelectValue className='hidden' /> */}
+                  </SelectTrigger>
+                  <SelectContent className='w-full'>
+                    <SelectGroup>
+                      <SelectItem value='high'>
+                        <Badge className='rounded-full' variant={'high'}>
+                          HIGH
+                        </Badge>
+                      </SelectItem>
+                      <SelectItem value='medium'>
+                        <Badge className='rounded-full' variant={'medium'}>
+                          MEDIUM
+                        </Badge>
+                      </SelectItem>
+                      <SelectItem value='low'>
+                        <Badge className='rounded-full' variant={'low'}>
+                          LOW
+                        </Badge>
+                      </SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <DrawerFooter>
               <Button
                 type='button'
                 variant='main'
+                disabled={!selectedTodo?.title}
                 onClick={() => {
                   setOpen(false);
                   console.log(selectedTodo?.due_date);
-                  selectedTodo && updateTodoContent(selectedTodo.id, selectedTodo.title, selectedTodo.due_date);
+                  selectedTodo &&
+                    updateTodoContent(
+                      selectedTodo.id,
+                      selectedTodo.title,
+                      selectedTodo.due_date,
+                      selectedTodo.priority
+                    );
                 }}>
                 保存する
               </Button>

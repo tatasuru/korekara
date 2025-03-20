@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { Badge } from '@/components/shadcn-ui/badge';
 import { Button } from '@/components/shadcn-ui/button';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/shadcn-ui/card';
 import { Checkbox } from '@/components/shadcn-ui/checkbox';
@@ -16,6 +17,7 @@ interface Todo {
   order?: number;
   due_date?: string;
   completed?: boolean;
+  priority?: 'low' | 'medium' | 'high';
 }
 
 export function TodoCard({
@@ -64,7 +66,10 @@ export function TodoCard({
           </Button>
         </div>
       </CardHeader>
-      <CardFooter className='px-4 md:px-6'>
+      <CardFooter className='gap-2 px-4 md:px-6'>
+        <Badge className='rounded-full text-xs' variant={todo.priority}>
+          {todo.priority?.toLocaleUpperCase()}
+        </Badge>
         <CardDescription>期限：{todo.due_date ? todo.due_date.replace(/-/g, '/') : 'なし'}</CardDescription>
       </CardFooter>
     </Card>
