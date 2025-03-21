@@ -25,7 +25,7 @@ import {
 import { Input } from '@/components/shadcn-ui/input';
 import { Label } from '@/components/shadcn-ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn-ui/popover';
-import { ScrollArea } from '@/components/shadcn-ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/shadcn-ui/scroll-area';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger } from '@/components/shadcn-ui/select';
 import { Separator } from '@/components/shadcn-ui/separator';
 import { Tabs, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
@@ -263,6 +263,7 @@ export default function Todos() {
                 ))}
               </div>
             </SortableContext>
+            <ScrollBar hidden={true} />
           </ScrollArea>
         </DndContext>
       ) : (
