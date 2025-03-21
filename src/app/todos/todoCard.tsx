@@ -49,21 +49,21 @@ export function TodoCard({
             {todo.title}
           </CardTitle>
         </div>
-        <div className='flex gap-2'>
+        <div className='flex gap-1'>
           <Button
             type='button'
             size={'xs'}
-            variant={'outline'}
+            variant={'ghost'}
             className={cn('cursor-pointer', isDesktop ? 'size-6' : 'size-6')}
             onClick={() => editTodo(todo.id)}>
             <Edit size={8} />
           </Button>
           <Button
             size={'xs'}
-            variant={'destructive'}
+            variant={'ghost'}
             className={cn('cursor-pointer', isDesktop ? 'size-6' : 'size-6')}
             onClick={() => deleteTodo(todo.id)}>
-            <Trash size={8} />
+            <Trash size={8} className='text-destructive' />
           </Button>
         </div>
       </CardHeader>

@@ -328,7 +328,20 @@ export default function Page() {
                         {format(day, 'd')}
                       </div>
                     </div>
-                    <div className='flex-1'></div>
+                    <div className='flex-1'>
+                      {events.map((event) => {
+                        if (format(day, 'yyyy-MM-dd') === event.start) {
+                          return (
+                            <div
+                              className='bg-main mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                              key={event.id}>
+                              {event.title}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -435,7 +448,7 @@ export default function Page() {
               </DialogClose>
               <Button
                 type='button'
-                variant='default'
+                variant='main'
                 onClick={() => {
                   setEvent({
                     title: inputValue,
