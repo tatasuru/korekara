@@ -154,7 +154,7 @@ export default function Page() {
     console.log('Cell clicked:', format(day, 'yyyy-MM-dd'));
 
     // Example: You could trigger a function to show events for this day
-    // showEventsForDay(day);
+    openDialog(day);
   };
 
   // Get all schedules
@@ -479,11 +479,76 @@ export default function Page() {
 
               <Separator />
 
-              <div>
-                <div className='flex items-center space-x-2'>
-                  <Switch id='all-day' className='data-[state=checked]:bg-main' />
-                  <Label htmlFor='all-day'>終日</Label>
-                </div>
+              <div className='flex items-center justify-between space-x-2'>
+                <Label htmlFor='all-day'>終日</Label>
+                <Switch
+                  id='all-day'
+                  className='data-[state=checked]:bg-main'
+                  defaultChecked
+                  onCheckedChange={(checked) => setIsAllDay(checked)}
+                />
+              </div>
+
+              <div className='flex items-center justify-between space-x-2'>
+                <Label htmlFor='all-day'>開始</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={'outline'}
+                      className={cn('w-[240px] justify-start text-left font-normal', !date && 'text-muted-foreground')}>
+                      <CalendarIcon />
+                      {selectedStartDate ? format(selectedStartDate, 'PPP', { locale: ja }) : <span>開始日を選択</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className='w-auto p-0' align='start'>
+                    <Calendar
+                      mode='single'
+                      locale={ja}
+                      defaultMonth={selectedStartDate}
+                      selected={selectedStartDate}
+                      onSelect={(newDate) => {
+                        setSelectedStartDate(newDate);
+                      }}
+                      formatters={{
+                        formatCaption: (jaDate) => {
+                          const date = new Date(jaDate);
+                          return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
+                        }
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className='flex items-center justify-between space-x-2'>
+                <Label htmlFor='all-day'>終了</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={'outline'}
+                      className={cn('w-[240px] justify-start text-left font-normal', !date && 'text-muted-foreground')}>
+                      <CalendarIcon />
+                      {selectedEndDate ? format(selectedEndDate, 'PPP', { locale: ja }) : <span>終了日を選択</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className='w-auto p-0' align='start'>
+                    <Calendar
+                      mode='single'
+                      locale={ja}
+                      defaultMonth={selectedEndDate}
+                      selected={selectedEndDate}
+                      onSelect={(newDate) => {
+                        setSelectedEndDate(newDate);
+                      }}
+                      formatters={{
+                        formatCaption: (jaDate) => {
+                          const date = new Date(jaDate);
+                          return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
+                        }
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
