@@ -11,9 +11,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
+  DialogTitle
 } from '@/components/shadcn-ui/dialog';
 import {
   Drawer,
@@ -22,31 +20,24 @@ import {
   DrawerDescription,
   DrawerFooter,
   DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger
+  DrawerTitle
 } from '@/components/shadcn-ui/drawer';
 import { Input } from '@/components/shadcn-ui/input';
 import { Label } from '@/components/shadcn-ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn-ui/popover';
 import { ScrollArea } from '@/components/shadcn-ui/scroll-area';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue
-} from '@/components/shadcn-ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger } from '@/components/shadcn-ui/select';
 import { Separator } from '@/components/shadcn-ui/separator';
-import { Switch } from '@/components/shadcn-ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
 import { TodoCard } from '@/components/todoCard';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/utils/supabase/client';
+import { DndContext, type DragOverEvent, MeasuringStrategy } from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 
-import { addDays, format, set } from 'date-fns';
+import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { CalendarIcon } from 'lucide-react';
 
@@ -134,6 +125,18 @@ export default function Todos() {
     setOpen(true);
   }
 
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setTodos((todos) => {
+        const oldIndex = todos.findIndex((user) => user.id === active.id);
+        const newIndex = todos.findIndex((user) => user.id === over.id);
+        return arrayMove(todos, oldIndex, newIndex);
+      });
+    }
+  };
+
   useEffect(() => {
     fetchTodos();
   }, []);
@@ -168,17 +171,30 @@ export default function Todos() {
         </TabsList>
       </Tabs>
       {viewMode === 'list' ? (
-        <ScrollArea className='grid h-[calc(100svh-210px)] w-full md:h-[calc(100svh-160px)] md:max-w-2xl'>
-          {todos.map((todo) => (
-            <TodoCard
-              key={todo.id}
-              todo={todo}
-              deleteTodo={deleteTodo}
-              updateTodoStatus={updateTodoStatus}
-              editTodo={editTodo}
-            />
-          ))}
-        </ScrollArea>
+        <DndContext
+          onDragOver={handleDragOver}
+          modifiers={[restrictToVerticalAxis]}
+          measuring={{
+            droppable: {
+              strategy: MeasuringStrategy.Always
+            }
+          }}>
+          <ScrollArea className='h-[calc(100svh-210px)] w-full md:h-[calc(100svh-160px)] md:max-w-2xl'>
+            <SortableContext items={todos}>
+              <div className='flex flex-col gap-2'>
+                {todos.map((todo) => (
+                  <TodoCard
+                    key={todo.id}
+                    todo={todo}
+                    deleteTodo={deleteTodo}
+                    updateTodoStatus={updateTodoStatus}
+                    editTodo={editTodo}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </ScrollArea>
+        </DndContext>
       ) : (
         <div>MAP</div>
       )}
@@ -193,6 +209,7 @@ export default function Todos() {
               setOpen(true);
             }}>
             <DialogTitle className='text-sm font-bold'>編集</DialogTitle>
+            <DialogDescription className='hidden' />
             <Input
               value={selectedTodo?.title}
               onChange={(e) =>

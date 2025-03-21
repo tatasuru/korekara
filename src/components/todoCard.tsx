@@ -8,8 +8,10 @@ import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/comp
 import { Checkbox } from '@/components/shadcn-ui/checkbox';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
-import { Edit, Trash } from 'lucide-react';
+import { Edit, GripVertical, Trash } from 'lucide-react';
 
 interface Todo {
   id: string;
@@ -32,10 +34,28 @@ export function TodoCard({
   editTodo: (id: string) => void;
 }) {
   const isDesktop = useMediaQuery('(min-width: 768px)');
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging, setActivatorNodeRef } = useSortable({
+    id: todo.id
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition
+  };
   return (
-    <Card key={todo.id} className='mb-2 cursor-pointer gap-1 rounded-md py-3 shadow-none last:mb-0'>
+    <Card className='gap-1 rounded-md py-3 shadow-none last:mb-0' ref={setNodeRef} style={style}>
       <CardHeader className='flex items-center justify-between gap-2 px-4 md:px-6'>
         <div className='flex w-4/5 items-center gap-2'>
+          <Button
+            variant={'ghost'}
+            size={'xs'}
+            type='button'
+            ref={setActivatorNodeRef}
+            className={cn(isDragging ? 'cursor-grabbing' : 'cursor-grab')}
+            {...attributes}
+            {...listeners}>
+            <GripVertical className='text-muted-foreground' />
+          </Button>
           <Checkbox
             className='data-[state=checked]:bg-main dark:data-[state=checked]:bg-main data-[state=checked]:border-main cursor-pointer data-[state=checked]:text-white'
             checked={todo.completed}
@@ -67,7 +87,7 @@ export function TodoCard({
           </Button>
         </div>
       </CardHeader>
-      <CardFooter className='items-center gap-2 px-4 md:px-6'>
+      <CardFooter className='items-center gap-2 pr-4 pl-10 md:pr-6 md:pl-20'>
         <Badge className='rounded-full px-1.5 py-1.5 text-[10px] leading-1' variant={todo.priority}>
           {todo.priority?.toLocaleUpperCase()}
         </Badge>
