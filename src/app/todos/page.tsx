@@ -249,7 +249,7 @@ export default function Todos() {
       </Tabs>
       {viewMode === 'list' ? (
         <DndContext onDragOver={handleDragOver} onDragEnd={handleDragEnd} modifiers={[restrictToVerticalAxis]}>
-          <ScrollArea className='h-[calc(100svh-210px)] w-full md:h-[calc(100svh-160px)] md:max-w-2xl'>
+          <ScrollArea className='h-[calc(100svh-210px)] w-full overscroll-none md:h-[calc(100svh-160px)] md:max-w-2xl'>
             <SortableContext items={todos.map((todo) => todo.id)}>
               <div className='flex flex-col gap-2'>
                 {todos.map((todo) => (

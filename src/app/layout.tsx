@@ -29,7 +29,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
-      <body className={`${geistSans.variable} ${geistMono.variable} overscroll-none antialiased md:overscroll-auto`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} overflow-hidden overscroll-none antialiased md:overflow-auto md:overscroll-auto`}>
         <SidebarProvider>
           <AppSidebar />
           <main className='flex h-[calc(100svh-75px)] w-full flex-col gap-2 p-4 md:h-auto md:p-2'>
