@@ -34,8 +34,19 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/utils/supabase/client';
 
-import { addMonths, addWeeks, eachDayOfInterval, endOfWeek, format, startOfWeek, subMonths, subWeeks } from 'date-fns';
+import {
+  addMonths,
+  addWeeks,
+  eachDayOfInterval,
+  endOfWeek,
+  format,
+  set,
+  startOfWeek,
+  subMonths,
+  subWeeks
+} from 'date-fns';
 import { ja, se } from 'date-fns/locale';
+import { Edit, Trash } from 'lucide-react';
 import { CalendarIcon } from 'lucide-react';
 import { Copy } from 'lucide-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -54,17 +65,10 @@ export default function Page() {
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
   const [open, setOpen] = useState(false);
   const supabase = createClient();
-  const [events, setEvents] = useState<Event[]>([
-    // {
-    //   id: 1,
-    //   title: 'Event 1',
-    //   start: '2025-03-10',
-    //   end: '2025-03-10',
-    //   all_day: true
-    // },
-  ]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [selectedStartDate, setSelectedStartDate] = useState<Date | undefined>(undefined);
   const [selectedEndDate, setSelectedEndDate] = useState<Date | undefined>(undefined);
+  const [selectedEvent, setSelectedEvent] = useState<Event | undefined>(undefined);
   const [isAllDay, setIsAllDay] = useState(true);
   const [inputValue, setInputValue] = useState('');
 
@@ -136,9 +140,18 @@ export default function Page() {
   };
 
   // Open dialog
-  const openDialog = (day: Date) => {
+  const openDialog = (day: Date, event?: Event) => {
     setSelectedStartDate(day);
     setSelectedEndDate(day);
+
+    if (event) {
+      setSelectedEvent(event);
+      setInputValue(event.title);
+      setIsAllDay(event.all_day);
+      setSelectedStartDate(new Date(event.start));
+      setSelectedEndDate(new Date(event.end));
+    }
+
     setOpen(true);
   };
 
@@ -199,6 +212,37 @@ export default function Page() {
     }
 
     setEvents([...events, data[0]]);
+  };
+
+  // Update event
+  const updateEvent = async (
+    id: number,
+    { title, start, end, all_day }: Pick<Event, 'title' | 'start' | 'end' | 'all_day'>
+  ) => {
+    const { data, error } = await supabase
+      .from('calendar')
+      .update({ title, start, end, all_day })
+      .match({ id })
+      .select();
+
+    if (error) {
+      console.error('Error updating event:', error.message);
+      return;
+    }
+
+    setEvents(events.map((event) => (event.id === id ? data[0] : event)));
+  };
+
+  // delete event
+  const deleteEvent = async (id: number) => {
+    const { error } = await supabase.from('calendar').delete().match({ id });
+
+    if (error) {
+      console.error('Error deleting event:', error.message);
+      return;
+    }
+
+    setEvents(events.filter((event) => event.id !== id));
   };
 
   return (
@@ -299,8 +343,12 @@ export default function Page() {
                           if (format(props.date, 'yyyy-MM-dd') === event.start) {
                             return (
                               <div
-                                className='bg-main mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
-                                key={event.id}>
+                                className='bg-main hover:bg-main/80 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                                key={event.id}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openDialog(props.date, event);
+                                }}>
                                 {event.title}
                               </div>
                             );
@@ -333,8 +381,12 @@ export default function Page() {
                         if (format(day, 'yyyy-MM-dd') === event.start) {
                           return (
                             <div
-                              className='bg-main mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
-                              key={event.id}>
+                              className='bg-main hover:bg-main/80 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                              key={event.id}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openDialog(day, event);
+                              }}>
                               {event.title}
                             </div>
                           );
@@ -362,6 +414,7 @@ export default function Page() {
             <DialogTitle className='text-sm font-bold'>予定を編集</DialogTitle>
             <Input
               placeholder='タイトル'
+              defaultValue={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               className='selection:bg-main/80 w-full rounded-none border-0 shadow-none ring-0 selection:text-white focus:shadow-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0 md:text-2xl'
             />
@@ -373,7 +426,7 @@ export default function Page() {
               <Switch
                 id='all-day'
                 className='data-[state=checked]:bg-main'
-                defaultChecked
+                defaultChecked={isAllDay}
                 onCheckedChange={(checked) => setIsAllDay(checked)}
               />
             </div>
@@ -440,32 +493,76 @@ export default function Page() {
               </Popover>
             </div>
 
-            <DialogFooter className=''>
-              <DialogClose asChild>
-                <Button type='button' variant='secondary'>
-                  キャンセル
-                </Button>
-              </DialogClose>
+            <DialogFooter className='w-full items-center md:justify-between'>
               <Button
-                type='button'
-                variant='main'
+                variant={'destructive'}
                 onClick={() => {
-                  setEvent({
-                    title: inputValue,
-                    start: selectedStartDate ? format(selectedStartDate, 'yyyy-MM-dd') : '',
-                    end: selectedEndDate ? format(selectedEndDate, 'yyyy-MM-dd') : '',
-                    all_day: isAllDay
-                  });
+                  deleteEvent(selectedEvent?.id || 0);
+
                   setOpen(false);
+
+                  setTimeout(() => {
+                    setInputValue('');
+                    setSelectedStartDate(undefined);
+                    setSelectedEndDate(undefined);
+                    setIsAllDay(true);
+                  }, 500);
                 }}>
-                保存する
+                削除する
               </Button>
+              <div className='flex items-center gap-2'>
+                <DialogClose asChild>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    onClick={() => {
+                      setOpen(false);
+
+                      setTimeout(() => {
+                        setInputValue('');
+                        setSelectedStartDate(undefined);
+                        setSelectedEndDate(undefined);
+                        setIsAllDay(true);
+                      }, 500);
+                    }}>
+                    キャンセル
+                  </Button>
+                </DialogClose>
+                <Button
+                  type='button'
+                  variant='main'
+                  onClick={() => {
+                    if (selectedEvent) {
+                      updateEvent(selectedEvent.id, {
+                        title: inputValue,
+                        start: selectedStartDate ? format(selectedStartDate, 'yyyy-MM-dd') : '',
+                        end: selectedEndDate ? format(selectedEndDate, 'yyyy-MM-dd') : '',
+                        all_day: isAllDay
+                      });
+                    } else {
+                      setEvent({
+                        title: inputValue,
+                        start: selectedStartDate ? format(selectedStartDate, 'yyyy-MM-dd') : '',
+                        end: selectedEndDate ? format(selectedEndDate, 'yyyy-MM-dd') : '',
+                        all_day: isAllDay
+                      });
+                    }
+
+                    setOpen(false);
+                    setInputValue('');
+                    setSelectedStartDate(undefined);
+                    setSelectedEndDate(undefined);
+                    setIsAllDay(true);
+                  }}>
+                  保存する
+                </Button>
+              </div>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       ) : (
         <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent className=''>
+          <DrawerContent className='h-full'>
             <DrawerHeader className='p-0'>
               <DrawerTitle className='text-sm font-bold'></DrawerTitle>
               <DrawerDescription></DrawerDescription>
@@ -474,6 +571,8 @@ export default function Page() {
             <div className='grid gap-4 p-4'>
               <Input
                 placeholder='タイトル'
+                defaultValue={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
                 className='selection:bg-main/80 w-full rounded-none border-0 text-2xl shadow-none ring-0 selection:text-white focus:shadow-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0'
               />
 
@@ -484,7 +583,7 @@ export default function Page() {
                 <Switch
                   id='all-day'
                   className='data-[state=checked]:bg-main'
-                  defaultChecked
+                  defaultChecked={isAllDay}
                   onCheckedChange={(checked) => setIsAllDay(checked)}
                 />
               </div>
@@ -557,14 +656,60 @@ export default function Page() {
                 type='button'
                 variant='main'
                 onClick={() => {
-                  setEvent({ title: 'Event 3', start: '2025-03-13', end: '2025-03-13', all_day: true });
+                  if (selectedEvent) {
+                    updateEvent(selectedEvent.id, {
+                      title: inputValue,
+                      start: selectedStartDate ? format(selectedStartDate, 'yyyy-MM-dd') : '',
+                      end: selectedEndDate ? format(selectedEndDate, 'yyyy-MM-dd') : '',
+                      all_day: isAllDay
+                    });
+                  } else {
+                    setEvent({
+                      title: inputValue,
+                      start: selectedStartDate ? format(selectedStartDate, 'yyyy-MM-dd') : '',
+                      end: selectedEndDate ? format(selectedEndDate, 'yyyy-MM-dd') : '',
+                      all_day: isAllDay
+                    });
+                  }
+
                   setOpen(false);
+                  setInputValue('');
+                  setSelectedStartDate(undefined);
+                  setSelectedEndDate(undefined);
+                  setIsAllDay(true);
                 }}>
                 保存する
               </Button>
+              <Button
+                variant={'destructive'}
+                onClick={() => {
+                  deleteEvent(selectedEvent?.id || 0);
+
+                  setOpen(false);
+
+                  setTimeout(() => {
+                    setInputValue('');
+                    setSelectedStartDate(undefined);
+                    setSelectedEndDate(undefined);
+                    setIsAllDay(true);
+                  }, 500);
+                }}>
+                削除する
+              </Button>
               <DrawerClose asChild>
-                <Button type='button' variant='outline'>
-                  Cancel
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={() => {
+                    setOpen(false);
+                    setTimeout(() => {
+                      setInputValue('');
+                      setSelectedStartDate(undefined);
+                      setSelectedEndDate(undefined);
+                      setIsAllDay(true);
+                    }, 500);
+                  }}>
+                  キャンセル
                 </Button>
               </DrawerClose>
             </DrawerFooter>
