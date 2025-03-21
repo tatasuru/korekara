@@ -151,6 +151,18 @@ export default function Todos() {
     setOpen(true);
   }
 
+  async function updateOrder(todoOrder: number, todoId: string) {
+    return new Promise(async (resolve) => {
+      const { error } = await supabase.from('todos').update({ order: todoOrder }).eq('id', todoId);
+
+      if (error) {
+        console.error(error);
+      }
+
+      resolve(true);
+    });
+  }
+
   const handleDragOver = async (event: DragOverEvent) => {
     const { active, over } = event;
 
@@ -169,29 +181,34 @@ export default function Todos() {
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
+    const { active, over, collisions } = event;
 
     console.log('Drag終了:', {
-      active: active.id,
-      over: over?.id || 'なし'
+      active: collisions?.[0]?.id || active.id,
+      over: collisions?.[1]?.id || over?.id
     });
 
-    if (over && active.id !== over.id) {
+    const activeId = collisions?.[0]?.id || active.id;
+    const overId = collisions?.[1]?.id || over?.id;
+
+    if (over && activeId !== overId) {
+      const updatedTodos = [...todos];
+
+      // Update the order property for each todo based on its new position
+      const reorderedTodos = updatedTodos.map((todo, index) => ({
+        ...todo,
+        order: index + 1 // Order starts from 1
+      }));
+
+      setTodos(reorderedTodos);
+
       try {
-        const updatedTodos = [...todos];
-
-        for (let i = 0; i < updatedTodos.length; i++) {
-          const todo = updatedTodos[i];
-          const newOrder = updatedTodos.length - i;
-
-          if (todo.order !== newOrder) {
-            await supabase.from('todos').update({ order: newOrder }).match({ id: todo.id });
-          }
+        for (const todo of reorderedTodos) {
+          await updateOrder(todo.order, todo.id);
         }
-
-        console.log('データベース更新完了');
+        console.log('Database order update completed:', reorderedTodos);
       } catch (error) {
-        console.error('順序更新中にエラーが発生:', error);
+        console.error('Error updating order:', error);
         fetchTodos();
       }
     }
