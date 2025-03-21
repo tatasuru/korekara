@@ -33,7 +33,7 @@ import { TodoCard } from '@/components/todoCard';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/utils/supabase/client';
-import { DndContext, type DragOverEvent, MeasuringStrategy } from '@dnd-kit/core';
+import { DndContext, type DragEndEvent, type DragOverEvent, MeasuringStrategy } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 
@@ -44,7 +44,7 @@ import { CalendarIcon } from 'lucide-react';
 interface Todo {
   id: string;
   title: string;
-  order?: number;
+  order: number;
   due_date?: string;
   completed?: boolean;
   priority?: 'low' | 'medium' | 'high';
@@ -65,11 +65,13 @@ export default function Todos() {
 
   async function fetchTodos() {
     const { data, error } = await supabase.from('todos').select('*').order('order', { ascending: false });
+    const orderedData = data?.sort((a, b) => a.order - b.order);
+
     if (error) {
       console.error(error);
     } else {
-      setTodos(data || []);
-      console.log(data);
+      setTodos(orderedData || []);
+      console.log(orderedData);
     }
   }
 
@@ -102,12 +104,36 @@ export default function Todos() {
     }
   }
 
-  async function updateTodoContent(id: string, title: string, due_date?: string, priority?: 'low' | 'medium' | 'high') {
-    const { error } = await supabase.from('todos').update({ title, due_date, priority }).match({ id });
+  async function updateTodoContent({
+    id,
+    title,
+    due_date,
+    order,
+    priority
+  }: {
+    id: string;
+    title: string;
+    due_date?: string;
+    order?: number;
+    priority?: 'low' | 'medium' | 'high';
+  }) {
+    const { error } = await supabase.from('todos').update({ title, due_date, order, priority }).match({ id });
     if (error) {
       console.error(error);
     } else {
-      setTodos((prev) => prev.map((todo) => (todo.id === id ? { ...todo, title, due_date, priority } : todo)));
+      setTodos((prev) =>
+        prev.map((todo) =>
+          todo.id === id
+            ? {
+                ...todo,
+                title,
+                due_date,
+                order: order ?? todo.order,
+                priority
+              }
+            : todo
+        )
+      );
     }
   }
 
@@ -125,15 +151,49 @@ export default function Todos() {
     setOpen(true);
   }
 
-  const handleDragOver = (event: DragOverEvent) => {
+  const handleDragOver = async (event: DragOverEvent) => {
     const { active, over } = event;
+
+    console.log('Drag中:', {
+      active: active.id,
+      over: over?.id || 'なし'
+    });
 
     if (over && active.id !== over.id) {
       setTodos((todos) => {
-        const oldIndex = todos.findIndex((user) => user.id === active.id);
-        const newIndex = todos.findIndex((user) => user.id === over.id);
+        const oldIndex = todos.findIndex((todo) => todo.id === active.id);
+        const newIndex = todos.findIndex((todo) => todo.id === over.id);
         return arrayMove(todos, oldIndex, newIndex);
       });
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    console.log('Drag終了:', {
+      active: active.id,
+      over: over?.id || 'なし'
+    });
+
+    if (over && active.id !== over.id) {
+      try {
+        const updatedTodos = [...todos];
+
+        for (let i = 0; i < updatedTodos.length; i++) {
+          const todo = updatedTodos[i];
+          const newOrder = updatedTodos.length - i;
+
+          if (todo.order !== newOrder) {
+            await supabase.from('todos').update({ order: newOrder }).match({ id: todo.id });
+          }
+        }
+
+        console.log('データベース更新完了');
+      } catch (error) {
+        console.error('順序更新中にエラーが発生:', error);
+        fetchTodos();
+      }
     }
   };
 
@@ -171,16 +231,9 @@ export default function Todos() {
         </TabsList>
       </Tabs>
       {viewMode === 'list' ? (
-        <DndContext
-          onDragOver={handleDragOver}
-          modifiers={[restrictToVerticalAxis]}
-          measuring={{
-            droppable: {
-              strategy: MeasuringStrategy.Always
-            }
-          }}>
+        <DndContext onDragOver={handleDragOver} onDragEnd={handleDragEnd} modifiers={[restrictToVerticalAxis]}>
           <ScrollArea className='h-[calc(100svh-210px)] w-full md:h-[calc(100svh-160px)] md:max-w-2xl'>
-            <SortableContext items={todos}>
+            <SortableContext items={todos.map((todo) => todo.id)}>
               <div className='flex flex-col gap-2'>
                 {todos.map((todo) => (
                   <TodoCard
@@ -320,12 +373,13 @@ export default function Todos() {
                 onClick={() => {
                   setOpen(false);
                   selectedTodo &&
-                    updateTodoContent(
-                      selectedTodo.id,
-                      selectedTodo.title,
-                      selectedTodo.due_date,
-                      selectedTodo.priority
-                    );
+                    updateTodoContent({
+                      id: selectedTodo.id,
+                      title: selectedTodo.title,
+                      due_date: selectedTodo.due_date,
+                      order: selectedTodo.order,
+                      priority: selectedTodo.priority
+                    });
                 }}>
                 保存する
               </Button>
@@ -448,12 +502,13 @@ export default function Todos() {
                   setOpen(false);
                   console.log(selectedTodo?.due_date);
                   selectedTodo &&
-                    updateTodoContent(
-                      selectedTodo.id,
-                      selectedTodo.title,
-                      selectedTodo.due_date,
-                      selectedTodo.priority
-                    );
+                    updateTodoContent({
+                      id: selectedTodo.id,
+                      title: selectedTodo.title,
+                      due_date: selectedTodo.due_date,
+                      order: selectedTodo.order,
+                      priority: selectedTodo.priority
+                    });
                 }}>
                 保存する
               </Button>
