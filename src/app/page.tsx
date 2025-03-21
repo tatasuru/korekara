@@ -2,28 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 
+import { CalendarDialog } from '@/components/calendarDialog';
+import { CalendarDrawer } from '@/components/calendarDrawer';
 import { Button } from '@/components/shadcn-ui/button';
 import { Calendar } from '@/components/shadcn-ui/calendar';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/shadcn-ui/dialog';
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger
-} from '@/components/shadcn-ui/drawer';
 import { Input } from '@/components/shadcn-ui/input';
 import { Label } from '@/components/shadcn-ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn-ui/popover';
@@ -60,17 +42,15 @@ interface Event {
 }
 
 export default function Page() {
+  const supabase = createClient();
+
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
   const [open, setOpen] = useState(false);
-  const supabase = createClient();
   const [events, setEvents] = useState<Event[]>([]);
-  const [selectedStartDate, setSelectedStartDate] = useState<Date | undefined>(undefined);
-  const [selectedEndDate, setSelectedEndDate] = useState<Date | undefined>(undefined);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedEvent, setSelectedEvent] = useState<Event | undefined>(undefined);
-  const [isAllDay, setIsAllDay] = useState(true);
-  const [inputValue, setInputValue] = useState('');
 
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
@@ -88,6 +68,9 @@ export default function Page() {
     getAllSchedules();
   }, []);
 
+  /************************
+   * FOR CALENDAR
+   ************************/
   // Handle navigation to previous/next week
   const navigateWeek = (direction: 'prev' | 'next') => {
     if (date) {
@@ -139,37 +122,32 @@ export default function Page() {
     setDate(new Date());
   };
 
-  // Open dialog
-  const openDialog = (day: Date, event?: Event) => {
-    setSelectedStartDate(day);
-    setSelectedEndDate(day);
+  /****************
+   * FOR DIALOG
+   ****************/
+  // handle dialog open/close
+  const handleDialogOpenClose = (isOpen: boolean, day?: Date, event?: Event) => {
+    if (isOpen) {
+      if (!date || (day && format(day, 'yyyy-MM-dd') !== format(date, 'yyyy-MM-dd'))) {
+        setDate(day);
+      }
 
-    if (event) {
-      setSelectedEvent(event);
-      setInputValue(event.title);
-      setIsAllDay(event.all_day);
-      setSelectedStartDate(new Date(event.start));
-      setSelectedEndDate(new Date(event.end));
+      setSelectedDate(day);
+
+      if (event) {
+        setSelectedEvent(event);
+      }
+    } else {
+      setSelectedDate(undefined);
+      setSelectedEvent(undefined);
     }
 
-    setOpen(true);
+    setOpen(isOpen);
   };
 
-  // Handle cell click event
-  const handleCellClick = (day: Date) => {
-    // Prevent deselection when clicking the same date twice
-    // Only update if clicking a different date or if date is undefined
-    if (!date || format(day, 'yyyy-MM-dd') !== format(date, 'yyyy-MM-dd')) {
-      setDate(day);
-    }
-
-    // Always execute these actions even when clicking the same date
-    console.log('Cell clicked:', format(day, 'yyyy-MM-dd'));
-
-    // Example: You could trigger a function to show events for this day
-    openDialog(day);
-  };
-
+  /****************
+   * FOR SUPABASE
+   ****************/
   // Get all schedules
   const getAllSchedules = async () => {
     let { data: calendar, error } = await supabase.from('calendar').select('*');
@@ -182,26 +160,17 @@ export default function Page() {
     setEvents(calendar || []);
   };
 
-  // set events
-  const setEvent = async ({
-    title,
-    start,
-    end,
-    all_day
-  }: {
-    title: string;
-    start: string;
-    end: string;
-    all_day: boolean;
-  }) => {
+  // Create events
+  const createEvent = async (scheduleData: Pick<Event, 'title' | 'start' | 'end' | 'all_day'>) => {
+    console.log(scheduleData);
     const { data, error } = await supabase
       .from('calendar')
       .insert([
         {
-          title,
-          start,
-          end,
-          all_day
+          title: scheduleData.title,
+          start: scheduleData.start,
+          end: scheduleData.end,
+          all_day: scheduleData.all_day
         }
       ])
       .select();
@@ -327,7 +296,7 @@ export default function Page() {
                   return (
                     <div
                       className='grid h-full w-full cursor-pointer grid-rows-[auto_1fr] text-xs'
-                      onClick={() => openDialog(props.date)}>
+                      onClick={() => handleDialogOpenClose(true, props.date)}>
                       <div className='flex items-center justify-center'>
                         <span
                           className={
@@ -347,7 +316,7 @@ export default function Page() {
                                 key={event.id}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  openDialog(props.date, event);
+                                  handleDialogOpenClose(true, props.date, event);
                                 }}>
                                 {event.title}
                               </div>
@@ -368,7 +337,7 @@ export default function Page() {
                   <div
                     key={index}
                     className={`flex cursor-pointer flex-col border-r p-2 last:border-r-0 ${format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-accent/30' : ''} ${date && format(day, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd') ? 'ring-main rounded-md ring-1' : ''}`}
-                    onClick={() => handleCellClick(day)}>
+                    onClick={() => handleDialogOpenClose(true, day)}>
                     <div className='mb-2 text-center'>
                       <div className='text-muted-foreground text-xs'>{format(day, 'E', { locale: ja })}</div>
                       <div
@@ -385,7 +354,7 @@ export default function Page() {
                               key={event.id}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                openDialog(day, event);
+                                handleDialogOpenClose(true, day, event);
                               }}>
                               {event.title}
                             </div>
@@ -404,317 +373,25 @@ export default function Page() {
 
       {/* edit modal */}
       {isDesktop ? (
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent
-            className='p-4 sm:max-w-md'
-            onPointerDownOutside={(e) => {
-              e.preventDefault();
-              setOpen(true);
-            }}>
-            <DialogTitle className='text-sm font-bold'>予定を編集</DialogTitle>
-            <Input
-              placeholder='タイトル'
-              defaultValue={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              className='selection:bg-main/80 w-full rounded-none border-0 shadow-none ring-0 selection:text-white focus:shadow-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0 md:text-2xl'
-            />
-
-            <Separator />
-
-            <div className='flex items-center justify-between space-x-2'>
-              <Label htmlFor='all-day'>終日</Label>
-              <Switch
-                id='all-day'
-                className='data-[state=checked]:bg-main'
-                defaultChecked={isAllDay}
-                onCheckedChange={(checked) => setIsAllDay(checked)}
-              />
-            </div>
-
-            <div className='flex items-center justify-between space-x-2'>
-              <Label htmlFor='all-day'>開始</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={'outline'}
-                    className={cn('w-[240px] justify-start text-left font-normal', !date && 'text-muted-foreground')}>
-                    <CalendarIcon />
-                    {selectedStartDate ? format(selectedStartDate, 'PPP', { locale: ja }) : <span>開始日を選択</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className='w-auto p-0' align='start'>
-                  <Calendar
-                    mode='single'
-                    locale={ja}
-                    defaultMonth={selectedStartDate}
-                    selected={selectedStartDate}
-                    onSelect={(newDate) => {
-                      setSelectedStartDate(newDate);
-                    }}
-                    formatters={{
-                      formatCaption: (jaDate) => {
-                        const date = new Date(jaDate);
-                        return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
-                      }
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className='flex items-center justify-between space-x-2'>
-              <Label htmlFor='all-day'>終了</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={'outline'}
-                    className={cn('w-[240px] justify-start text-left font-normal', !date && 'text-muted-foreground')}>
-                    <CalendarIcon />
-                    {selectedEndDate ? format(selectedEndDate, 'PPP', { locale: ja }) : <span>終了日を選択</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className='w-auto p-0' align='start'>
-                  <Calendar
-                    mode='single'
-                    locale={ja}
-                    defaultMonth={selectedEndDate}
-                    selected={selectedEndDate}
-                    onSelect={(newDate) => {
-                      setSelectedEndDate(newDate);
-                    }}
-                    formatters={{
-                      formatCaption: (jaDate) => {
-                        const date = new Date(jaDate);
-                        return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
-                      }
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <DialogFooter className='w-full items-center md:justify-between'>
-              <Button
-                variant={'destructive'}
-                onClick={() => {
-                  deleteEvent(selectedEvent?.id || 0);
-
-                  setOpen(false);
-
-                  setTimeout(() => {
-                    setInputValue('');
-                    setSelectedStartDate(undefined);
-                    setSelectedEndDate(undefined);
-                    setIsAllDay(true);
-                  }, 500);
-                }}>
-                削除する
-              </Button>
-              <div className='flex items-center gap-2'>
-                <DialogClose asChild>
-                  <Button
-                    type='button'
-                    variant='outline'
-                    onClick={() => {
-                      setOpen(false);
-
-                      setTimeout(() => {
-                        setInputValue('');
-                        setSelectedStartDate(undefined);
-                        setSelectedEndDate(undefined);
-                        setIsAllDay(true);
-                      }, 500);
-                    }}>
-                    キャンセル
-                  </Button>
-                </DialogClose>
-                <Button
-                  type='button'
-                  variant='main'
-                  onClick={() => {
-                    if (selectedEvent) {
-                      updateEvent(selectedEvent.id, {
-                        title: inputValue,
-                        start: selectedStartDate ? format(selectedStartDate, 'yyyy-MM-dd') : '',
-                        end: selectedEndDate ? format(selectedEndDate, 'yyyy-MM-dd') : '',
-                        all_day: isAllDay
-                      });
-                    } else {
-                      setEvent({
-                        title: inputValue,
-                        start: selectedStartDate ? format(selectedStartDate, 'yyyy-MM-dd') : '',
-                        end: selectedEndDate ? format(selectedEndDate, 'yyyy-MM-dd') : '',
-                        all_day: isAllDay
-                      });
-                    }
-
-                    setOpen(false);
-                    setInputValue('');
-                    setSelectedStartDate(undefined);
-                    setSelectedEndDate(undefined);
-                    setIsAllDay(true);
-                  }}>
-                  保存する
-                </Button>
-              </div>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <CalendarDialog
+          open={open}
+          selectedDate={selectedDate!}
+          event={selectedEvent}
+          handleDialogOpenClose={handleDialogOpenClose}
+          createEvent={createEvent}
+          updateEvent={updateEvent}
+          deleteEvent={deleteEvent}
+        />
       ) : (
-        <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent className='h-full'>
-            <DrawerHeader className='p-0'>
-              <DrawerTitle className='text-sm font-bold'></DrawerTitle>
-              <DrawerDescription></DrawerDescription>
-            </DrawerHeader>
-
-            <div className='grid gap-4 p-4'>
-              <Input
-                placeholder='タイトル'
-                defaultValue={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                className='selection:bg-main/80 w-full rounded-none border-0 text-2xl shadow-none ring-0 selection:text-white focus:shadow-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0'
-              />
-
-              <Separator />
-
-              <div className='flex items-center justify-between space-x-2'>
-                <Label htmlFor='all-day'>終日</Label>
-                <Switch
-                  id='all-day'
-                  className='data-[state=checked]:bg-main'
-                  defaultChecked={isAllDay}
-                  onCheckedChange={(checked) => setIsAllDay(checked)}
-                />
-              </div>
-
-              <div className='flex items-center justify-between space-x-2'>
-                <Label htmlFor='all-day'>開始</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={'outline'}
-                      className={cn('w-[240px] justify-start text-left font-normal', !date && 'text-muted-foreground')}>
-                      <CalendarIcon />
-                      {selectedStartDate ? format(selectedStartDate, 'PPP', { locale: ja }) : <span>開始日を選択</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className='w-auto p-0' align='start'>
-                    <Calendar
-                      mode='single'
-                      locale={ja}
-                      defaultMonth={selectedStartDate}
-                      selected={selectedStartDate}
-                      onSelect={(newDate) => {
-                        setSelectedStartDate(newDate);
-                      }}
-                      formatters={{
-                        formatCaption: (jaDate) => {
-                          const date = new Date(jaDate);
-                          return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
-                        }
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className='flex items-center justify-between space-x-2'>
-                <Label htmlFor='all-day'>終了</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={'outline'}
-                      className={cn('w-[240px] justify-start text-left font-normal', !date && 'text-muted-foreground')}>
-                      <CalendarIcon />
-                      {selectedEndDate ? format(selectedEndDate, 'PPP', { locale: ja }) : <span>終了日を選択</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className='w-auto p-0' align='start'>
-                    <Calendar
-                      mode='single'
-                      locale={ja}
-                      defaultMonth={selectedEndDate}
-                      selected={selectedEndDate}
-                      onSelect={(newDate) => {
-                        setSelectedEndDate(newDate);
-                      }}
-                      formatters={{
-                        formatCaption: (jaDate) => {
-                          const date = new Date(jaDate);
-                          return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
-                        }
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-
-            <DrawerFooter>
-              <Button
-                type='button'
-                variant='main'
-                onClick={() => {
-                  if (selectedEvent) {
-                    updateEvent(selectedEvent.id, {
-                      title: inputValue,
-                      start: selectedStartDate ? format(selectedStartDate, 'yyyy-MM-dd') : '',
-                      end: selectedEndDate ? format(selectedEndDate, 'yyyy-MM-dd') : '',
-                      all_day: isAllDay
-                    });
-                  } else {
-                    setEvent({
-                      title: inputValue,
-                      start: selectedStartDate ? format(selectedStartDate, 'yyyy-MM-dd') : '',
-                      end: selectedEndDate ? format(selectedEndDate, 'yyyy-MM-dd') : '',
-                      all_day: isAllDay
-                    });
-                  }
-
-                  setOpen(false);
-                  setInputValue('');
-                  setSelectedStartDate(undefined);
-                  setSelectedEndDate(undefined);
-                  setIsAllDay(true);
-                }}>
-                保存する
-              </Button>
-              <Button
-                variant={'destructive'}
-                onClick={() => {
-                  deleteEvent(selectedEvent?.id || 0);
-
-                  setOpen(false);
-
-                  setTimeout(() => {
-                    setInputValue('');
-                    setSelectedStartDate(undefined);
-                    setSelectedEndDate(undefined);
-                    setIsAllDay(true);
-                  }, 500);
-                }}>
-                削除する
-              </Button>
-              <DrawerClose asChild>
-                <Button
-                  type='button'
-                  variant='outline'
-                  onClick={() => {
-                    setOpen(false);
-                    setTimeout(() => {
-                      setInputValue('');
-                      setSelectedStartDate(undefined);
-                      setSelectedEndDate(undefined);
-                      setIsAllDay(true);
-                    }, 500);
-                  }}>
-                  キャンセル
-                </Button>
-              </DrawerClose>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
+        <CalendarDrawer
+          open={open}
+          selectedDate={selectedDate!}
+          event={selectedEvent}
+          handleDialogOpenClose={handleDialogOpenClose}
+          createEvent={createEvent}
+          updateEvent={updateEvent}
+          deleteEvent={deleteEvent}
+        />
       )}
     </div>
   );

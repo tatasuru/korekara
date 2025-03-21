@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 
-import { TodoCard } from '@/app/todos/todoCard';
 import { Badge } from '@/components/shadcn-ui/badge';
 import { Button } from '@/components/shadcn-ui/button';
 import { Calendar } from '@/components/shadcn-ui/calendar';
@@ -42,6 +41,7 @@ import {
 import { Separator } from '@/components/shadcn-ui/separator';
 import { Switch } from '@/components/shadcn-ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
+import { TodoCard } from '@/components/todoCard';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/utils/supabase/client';
