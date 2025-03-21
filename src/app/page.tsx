@@ -258,7 +258,37 @@ export default function Page() {
         </div>
       </div>
       <div className='flex flex-1 gap-x-2'>
-        <div className='h-full w-full flex-1'>
+        <div
+          className='h-full w-full flex-1'
+          onTouchStart={(e) => {
+            const touch = e.touches[0];
+            let startX = touch.clientX;
+            let startY = touch.clientY;
+            let moved = false;
+            const handleTouchMove = (e: TouchEvent) => {
+              const touch = e.touches[0];
+              if (Math.abs(touch.clientX - startX) > 50 || Math.abs(touch.clientY - startY) > 50) {
+                moved = true;
+              }
+            };
+            const handleTouchEnd = (e: TouchEvent) => {
+              if (moved) {
+                const endX = e.changedTouches[0].clientX;
+                if (Math.abs(endX - startX) > 50) {
+                  if (endX - startX > 0) {
+                    navigate('prev');
+                  } else {
+                    navigate('next');
+                  }
+                }
+              }
+
+              window.removeEventListener('touchmove', handleTouchMove);
+              window.removeEventListener('touchend', handleTouchEnd);
+            };
+            window.addEventListener('touchmove', handleTouchMove);
+            window.addEventListener('touchend', handleTouchEnd);
+          }}>
           {viewMode === 'month' ? (
             <Calendar
               mode='single'

@@ -75,7 +75,7 @@ export function CalendarDrawer({
 
   return (
     <Drawer open={open} onOpenChange={handleDialogOpenClose}>
-      <DrawerContent className='h-full'>
+      <DrawerContent className=''>
         <DrawerHeader className='p-0'>
           <DrawerTitle className='text-sm font-bold'></DrawerTitle>
           <DrawerDescription></DrawerDescription>
