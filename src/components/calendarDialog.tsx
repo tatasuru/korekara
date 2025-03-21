@@ -168,16 +168,18 @@ export function CalendarDialog({
           </Popover>
         </div>
 
-        <DialogFooter className='w-full items-center md:justify-between'>
-          <Button
-            variant={'destructive'}
-            onClick={() => {
-              deleteEvent(event?.id || 0);
-              handleDialogOpenClose(false);
-              resetValues();
-            }}>
-            削除する
-          </Button>
+        <DialogFooter className={cn('w-full items-center', event ? 'md:justify-between' : 'md:justify-end')}>
+          {event && (
+            <Button
+              variant={'destructive'}
+              onClick={() => {
+                deleteEvent(event?.id || 0);
+                handleDialogOpenClose(false);
+                resetValues();
+              }}>
+              削除する
+            </Button>
+          )}
           <div className='flex items-center gap-2'>
             <DialogClose asChild>
               <Button

@@ -196,15 +196,17 @@ export function CalendarDrawer({
             }}>
             保存する
           </Button>
-          <Button
-            variant={'destructive'}
-            onClick={() => {
-              deleteEvent(event?.id || 0);
-              handleDialogOpenClose(false);
-              resetValues();
-            }}>
-            削除する
-          </Button>
+          {event && (
+            <Button
+              variant={'destructive'}
+              onClick={() => {
+                deleteEvent(event?.id || 0);
+                handleDialogOpenClose(false);
+                resetValues();
+              }}>
+              削除する
+            </Button>
+          )}
           <DrawerClose asChild>
             <Button
               type='button'
