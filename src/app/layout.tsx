@@ -28,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en'>
+    <html lang='ja'>
       <body
         className={`${geistSans.variable} ${geistMono.variable} overflow-hidden overscroll-none antialiased md:overflow-auto md:overscroll-auto`}>
         <SidebarProvider>
