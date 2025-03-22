@@ -6,11 +6,6 @@ import { CalendarDialog } from '@/components/calendarDialog';
 import { CalendarDrawer } from '@/components/calendarDrawer';
 import { Button } from '@/components/shadcn-ui/button';
 import { Calendar } from '@/components/shadcn-ui/calendar';
-import { Input } from '@/components/shadcn-ui/input';
-import { Label } from '@/components/shadcn-ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn-ui/popover';
-import { Separator } from '@/components/shadcn-ui/separator';
-import { Switch } from '@/components/shadcn-ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
@@ -27,10 +22,7 @@ import {
   subMonths,
   subWeeks
 } from 'date-fns';
-import { ja, se } from 'date-fns/locale';
-import { Edit, Trash } from 'lucide-react';
-import { CalendarIcon } from 'lucide-react';
-import { Copy } from 'lucide-react';
+import { ja } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Event {
