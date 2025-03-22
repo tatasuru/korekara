@@ -210,6 +210,7 @@ export function CalendarDrawer({
           <Button
             type='button'
             variant='main'
+            disabled={!inputValue || !selectedStartDate}
             onClick={() => {
               if (event) {
                 updateEvent(event.id, {

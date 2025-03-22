@@ -526,7 +526,7 @@ export default function Page() {
                           const eventStart = new Date(event.start);
                           const eventEnd = new Date(event.end);
                           const daysLeft = Math.min(differenceInDays(eventEnd, eventStart) + 1, 7 - dateIndex);
-                          const topOffset = 28 + eventIndex * 22;
+                          const topOffset = eventIndex * 22;
 
                           return (
                             <div
@@ -552,7 +552,7 @@ export default function Page() {
 
                           const daysInThisWeek = Math.min(differenceInDays(eventEnd, weekStart) + 1, 7);
 
-                          const topOffset = 28 + (multiDayEventsStartingHere.length + eventIndex) * 22;
+                          const topOffset = (multiDayEventsStartingHere.length + eventIndex) * 22;
 
                           return (
                             <div

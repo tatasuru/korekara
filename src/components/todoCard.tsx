@@ -87,7 +87,7 @@ export function TodoCard({
           </Button>
         </div>
       </CardHeader>
-      <CardFooter className='items-center gap-2 pr-4 pl-10 md:pr-6 md:pl-20'>
+      <CardFooter className='items-center gap-2 pr-4 pl-12 md:pr-6 md:pl-20'>
         <Badge className='rounded-full px-1.5 py-1.5 text-[10px] leading-1' variant={todo.priority}>
           {todo.priority?.toLocaleUpperCase()}
         </Badge>

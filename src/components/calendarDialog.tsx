@@ -119,7 +119,10 @@ export function CalendarDialog({
             <Label htmlFor='all-day'>開始</Label>
             <Button
               variant={'outline'}
-              className={cn('w-fit justify-start text-left font-normal', !selectedStartDate && 'text-muted-foreground')}
+              className={cn(
+                'w-[150px] justify-start text-left font-normal',
+                !selectedStartDate && 'text-muted-foreground'
+              )}
               onClick={() => toggleAccordion(1)}>
               <CalendarIcon />
               {selectedStartDate ? format(selectedStartDate, 'PPP', { locale: ja }) : <span>開始日を選択</span>}
@@ -160,7 +163,10 @@ export function CalendarDialog({
             <Label htmlFor='all-day'>終了</Label>
             <Button
               variant={'outline'}
-              className={cn('w-fit justify-start text-left font-normal', !selectedEndDate && 'text-muted-foreground')}
+              className={cn(
+                'w-[150px] justify-start text-left font-normal',
+                !selectedEndDate && 'text-muted-foreground'
+              )}
               onClick={() => toggleAccordion(2)}>
               <CalendarIcon />
               {selectedEndDate ? format(selectedEndDate, 'PPP', { locale: ja }) : <span>終了日を選択</span>}
@@ -201,6 +207,7 @@ export function CalendarDialog({
             <Button
               type='button'
               variant='main'
+              disabled={!inputValue || !selectedStartDate}
               onClick={() => {
                 if (event) {
                   updateEvent(event.id, {
@@ -227,17 +234,6 @@ export function CalendarDialog({
               }}>
               保存する
             </Button>
-            {/* <DialogClose asChild>
-                <Button
-                  type='button'
-                  variant='outline'
-                  onClick={() => {
-                    handleDialogOpenClose(false);
-                    resetValues();
-                  }}>
-                  キャンセル
-                </Button>
-              </DialogClose> */}
             {event && (
               <Button
                 variant={'outline'}
