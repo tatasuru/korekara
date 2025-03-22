@@ -17,7 +17,10 @@ const badgeVariants = cva(
         outline: 'text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground',
         high: 'bg-[#ef4444]/20 text-[#ef4444] border-[#ef4444]/20',
         medium: 'bg-[#f59e0b]/20 text-[#f59e0b] border-[#f59e0b]/20',
-        low: 'bg-[#64748b]/20 text-[#64748b] border-[#64748b]/20'
+        low: 'bg-[#64748b]/20 text-[#64748b] border-[#64748b]/20',
+        today: 'bg-[#3b82f6]/20 text-[#3b82f6] border-[#3b82f6]/20',
+        tomorrow: 'bg-[#10b981]/20 text-[#10b981] border-[#10b981]/20',
+        expired: 'bg-[#ef4444]/20 text-[#ef4444] border-[#ef4444]/20'
       }
     },
     defaultVariants: {

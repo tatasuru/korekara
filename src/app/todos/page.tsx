@@ -24,7 +24,6 @@ import {
 } from '@/components/shadcn-ui/drawer';
 import { Input } from '@/components/shadcn-ui/input';
 import { Label } from '@/components/shadcn-ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn-ui/popover';
 import { ScrollArea, ScrollBar } from '@/components/shadcn-ui/scroll-area';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger } from '@/components/shadcn-ui/select';
 import { Separator } from '@/components/shadcn-ui/separator';
@@ -39,7 +38,7 @@ import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Plus } from 'lucide-react';
 
 interface Todo {
   id: string;
@@ -71,7 +70,6 @@ export default function Todos() {
       console.error(error);
     } else {
       setTodos(orderedData || []);
-      console.log(orderedData);
     }
   }
 
@@ -230,6 +228,31 @@ export default function Todos() {
     });
   };
 
+  // for bottom blur effect
+  const [isBlur, setIsBlur] = useState(false);
+  const scrollAreaRef = React.useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const scrollAreaElement = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+
+    if (scrollAreaElement) {
+      const handleScrollEvent = () => {
+        const { scrollTop, scrollHeight, clientHeight } = scrollAreaElement;
+        const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 5;
+
+        setIsBlur(!isAtBottom);
+        console.log('Scroll', { scrollTop, scrollHeight, clientHeight, isAtBottom });
+      };
+
+      scrollAreaElement.addEventListener('scroll', handleScrollEvent);
+
+      handleScrollEvent();
+
+      return () => {
+        scrollAreaElement.removeEventListener('scroll', handleScrollEvent);
+      };
+    }
+  }, [scrollAreaRef.current]);
+
   return (
     <div className='grid h-full grid-rows-[auto_auto_1fr] gap-4 md:flex md:grid-cols-2 md:flex-col'>
       <div className='flex w-full items-center gap-2 md:max-w-2xl'>
@@ -243,9 +266,10 @@ export default function Todos() {
         <Button
           type='button'
           variant={'main'}
-          className='cursor-pointer md:w-20'
+          className='cursor-pointer gap-1 md:w-20'
           disabled={!inputValue}
           onClick={addTodo}>
+          <Plus />
           追加
         </Button>
       </div>
@@ -261,7 +285,9 @@ export default function Todos() {
       </Tabs>
       {viewMode === 'list' ? (
         <DndContext onDragOver={handleDragOver} onDragEnd={handleDragEnd} modifiers={[restrictToVerticalAxis]}>
-          <ScrollArea className='h-[calc(100svh-210px)] w-full overscroll-none md:h-[calc(100svh-160px)] md:max-w-2xl'>
+          <ScrollArea
+            ref={scrollAreaRef}
+            className='relative h-[calc(100svh-210px)] w-full overscroll-none md:h-[calc(100svh-160px)] md:max-w-2xl'>
             <SortableContext items={todos.map((todo) => todo.id)}>
               <div className='flex flex-col gap-2'>
                 {todos.map((todo) => (
@@ -276,6 +302,13 @@ export default function Todos() {
               </div>
             </SortableContext>
             <ScrollBar hidden={true} />
+            <div
+              className={cn('pointer-events-none absolute bottom-0 left-0 h-10 w-full', isBlur ? 'flex' : 'hidden')}
+              style={{
+                background:
+                  'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 70%, rgba(255,255,255,1) 100%)'
+              }}
+            />
           </ScrollArea>
         </DndContext>
       ) : (
@@ -544,7 +577,6 @@ export default function Todos() {
                 disabled={!selectedTodo?.title}
                 onClick={() => {
                   setOpen(false);
-                  console.log(selectedTodo?.due_date);
                   selectedTodo &&
                     updateTodoContent({
                       id: selectedTodo.id,
