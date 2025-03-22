@@ -369,23 +369,30 @@ export default function Page() {
                               </div>
                               <div className='min-h-[30px] overflow-hidden'>
                                 {/* Render single-day events */}
-                                {singleDayEvents.map((event) => (
-                                  <div
-                                    className='bg-main hover:bg-main/80 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
-                                    key={event.id}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDialogOpenClose(true, date, event);
-                                    }}>
-                                    {event.title}
-                                  </div>
-                                ))}
+                                {singleDayEvents.map((event, eventIndex) => {
+                                  const topOffset = 28 + eventIndex * 22;
+
+                                  return (
+                                    <div
+                                      className='bg-main hover:bg-main/80 absolute mt-1 w-full truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                                      key={event.id}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDialogOpenClose(true, date, event);
+                                      }}
+                                      style={{
+                                        top: `calc(${topOffset}px)` // Stack multi-day events
+                                      }}>
+                                      {event.title}
+                                    </div>
+                                  );
+                                })}
 
                                 {/* Render multi-day events that START on this date */}
                                 {multiDayEventsStartingHere.map((event, eventIndex) => {
                                   const eventStart = new Date(event.start);
                                   const eventEnd = new Date(event.end);
-                                  const topOffset = 30 + eventIndex * 22;
+                                  const topOffset = 28 + eventIndex * 22;
 
                                   // Calculate days visible in this week (may continue to next week)
                                   const daysVisibleInWeek = Math.min(
@@ -416,7 +423,7 @@ export default function Page() {
                                 {dateIndex === 0 &&
                                   continuingEvents.map((event, eventIndex) => {
                                     const eventEnd = new Date(event.end);
-                                    const topOffset = 30 + eventIndex * 22;
+                                    const topOffset = 28 + eventIndex * 22;
                                     // Calculate days visible in this week
                                     const daysVisibleInWeek = Math.min(
                                       differenceInDays(eventEnd, weekStart) + 1,
@@ -484,7 +491,7 @@ export default function Page() {
                     <div
                       key={dateIndex}
                       className={`relative flex cursor-pointer flex-col border-r py-2 last:border-r-0 ${
-                        format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-accent/30' : ''
+                        format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-accent/28' : ''
                       } ${
                         date && format(day, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
                           ? 'ring-main rounded-md ring-1'
@@ -519,7 +526,7 @@ export default function Page() {
                           const eventStart = new Date(event.start);
                           const eventEnd = new Date(event.end);
                           const daysLeft = Math.min(differenceInDays(eventEnd, eventStart) + 1, 7 - dateIndex);
-                          const topOffset = 30 + eventIndex * 22;
+                          const topOffset = 28 + eventIndex * 22;
 
                           return (
                             <div
@@ -545,7 +552,7 @@ export default function Page() {
 
                           const daysInThisWeek = Math.min(differenceInDays(eventEnd, weekStart) + 1, 7);
 
-                          const topOffset = 30 + (multiDayEventsStartingHere.length + eventIndex) * 22;
+                          const topOffset = 28 + (multiDayEventsStartingHere.length + eventIndex) * 22;
 
                           return (
                             <div
