@@ -8,19 +8,23 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: 'ja',
     start_url: '/',
     display: 'standalone',
-    background_color: '#ffffff',
     theme_color: '#000000',
+    background_color: '#000000',
     icons: [
       {
-        src: '/vercel.svg',
-        sizes: '192x192',
+        purpose: 'maskable',
+        sizes: '512x512',
+        src: 'icon512_maskable.png',
         type: 'image/png'
       },
       {
-        src: '/vercel.svg',
+        purpose: 'any',
         sizes: '512x512',
+        src: 'icon512_rounded.png',
         type: 'image/png'
       }
-    ]
+    ],
+    orientation: 'any',
+    dir: 'auto'
   };
 }
