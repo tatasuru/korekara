@@ -237,10 +237,8 @@ export default function Todos() {
     if (scrollAreaElement) {
       const handleScrollEvent = () => {
         const { scrollTop, scrollHeight, clientHeight } = scrollAreaElement;
-        const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 5;
-
+        const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 70;
         setIsBlur(!isAtBottom);
-        console.log('Scroll', { scrollTop, scrollHeight, clientHeight, isAtBottom });
       };
 
       scrollAreaElement.addEventListener('scroll', handleScrollEvent);
