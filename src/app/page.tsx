@@ -12,8 +12,10 @@ import { cn } from '@/lib/utils';
 import { createClient } from '@/utils/supabase/client';
 
 import {
+  addDays,
   addMonths,
   addWeeks,
+  differenceInDays,
   eachDayOfInterval,
   endOfWeek,
   format,
@@ -314,40 +316,136 @@ export default function Page() {
                 day_today: 'text-accent-foreground bg-[#f7f7f7] aria-selected:bg-main aria-selected:text-white'
               }}
               components={{
-                Day: (props) => {
+                Row: (props) => {
+                  // Get start and end of current week
+                  const weekStart = props.dates[0];
+                  const weekEnd = props.dates[props.dates.length - 1];
+
                   return (
-                    <div
-                      className='grid h-full w-full cursor-pointer grid-rows-[auto_1fr] text-xs'
-                      onClick={() => handleDialogOpenClose(true, props.date)}>
-                      <div className='flex items-center justify-center'>
-                        <span
-                          className={
-                            format(props.date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
-                              ? 'bg-main inline-flex size-5 items-center justify-center rounded-full text-[10px] font-bold text-white md:text-xs'
-                              : 'text-primary inline-flex size-5 items-center justify-center rounded-full text-[10px] md:text-xs'
-                          }>
-                          {format(props.date, 'd')}
-                        </span>
-                      </div>
-                      <div className='min-h-[30px] overflow-hidden'>
-                        {events.map((event) => {
-                          if (format(props.date, 'yyyy-MM-dd') === event.start) {
-                            return (
-                              <div
-                                className='bg-main hover:bg-main/80 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
-                                key={event.id}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDialogOpenClose(true, props.date, event);
-                                }}>
-                                {event.title}
+                    <tr className='gird relative mt-2 w-full grid-cols-7 border-b'>
+                      {props.dates.map((date, dateIndex) => {
+                        // 1. Find single-day events for this date
+                        const singleDayEvents = events.filter(
+                          (event) => format(date, 'yyyy-MM-dd') === event.start && event.start === event.end
+                        );
+
+                        // 2. Find multi-day events that START on this specific date
+                        const multiDayEventsStartingHere = events.filter((event) => {
+                          const eventStart = new Date(event.start);
+                          const eventEnd = new Date(event.end);
+                          return (
+                            format(date, 'yyyy-MM-dd') === format(eventStart, 'yyyy-MM-dd') &&
+                            format(eventEnd, 'yyyy-MM-dd') !== format(eventStart, 'yyyy-MM-dd')
+                          );
+                        });
+
+                        // 3. Find multi-day events that CONTINUE through this date (started in previous week)
+                        const continuingEvents = events.filter((event) => {
+                          const eventStart = new Date(event.start);
+                          const eventEnd = new Date(event.end);
+                          return (
+                            format(date, 'yyyy-MM-dd') > format(eventStart, 'yyyy-MM-dd') &&
+                            format(date, 'yyyy-MM-dd') <= format(eventEnd, 'yyyy-MM-dd') &&
+                            format(date, 'yyyy-MM-dd') === format(weekStart, 'yyyy-MM-dd')
+                          );
+                        });
+
+                        return (
+                          <td
+                            className='[&:has([aria-selected])]:bg-accent relative py-2 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected].day-range-end)]:rounded-r-md'
+                            key={dateIndex}>
+                            <div
+                              className='grid h-full w-full cursor-pointer grid-rows-[auto_1fr] text-xs'
+                              onClick={() => handleDialogOpenClose(true, date)}>
+                              <div className='flex items-center justify-center'>
+                                <span
+                                  className={
+                                    format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
+                                      ? 'bg-main inline-flex size-5 items-center justify-center rounded-full text-[10px] font-bold text-white md:text-xs'
+                                      : 'text-primary inline-flex size-5 items-center justify-center rounded-full text-[10px] md:text-xs'
+                                  }>
+                                  {format(date, 'd')}
+                                </span>
                               </div>
-                            );
-                          }
-                          return null;
-                        })}
-                      </div>
-                    </div>
+                              <div className='min-h-[30px] overflow-hidden'>
+                                {/* Render single-day events */}
+                                {singleDayEvents.map((event) => (
+                                  <div
+                                    className='bg-main hover:bg-main/80 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                                    key={event.id}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDialogOpenClose(true, date, event);
+                                    }}>
+                                    {event.title}
+                                  </div>
+                                ))}
+
+                                {/* Render multi-day events that START on this date */}
+                                {multiDayEventsStartingHere.map((event, eventIndex) => {
+                                  const eventStart = new Date(event.start);
+                                  const eventEnd = new Date(event.end);
+
+                                  // Calculate days visible in this week (may continue to next week)
+                                  const daysVisibleInWeek = Math.min(
+                                    differenceInDays(weekEnd, eventStart) + 2,
+                                    differenceInDays(eventEnd, eventStart) + 2,
+                                    7 - dateIndex // Don't go beyond current week
+                                  );
+
+                                  return (
+                                    <div
+                                      className='bg-main hover:bg-main/80 absolute left-0 z-10 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                                      style={{
+                                        width: `calc(${daysVisibleInWeek * 100}% - 8px)`,
+                                        maxWidth: `calc(${daysVisibleInWeek * 100}% - 8px)`,
+                                        top: `calc(${30 + eventIndex * 22}px)` // Stack multi-day events
+                                      }}
+                                      key={event.id}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDialogOpenClose(true, date, event);
+                                      }}>
+                                      {event.title}
+                                    </div>
+                                  );
+                                })}
+
+                                {/* Render multi-day events that CONTINUE from previous week */}
+                                {dateIndex === 0 &&
+                                  continuingEvents.map((event, eventIndex) => {
+                                    const eventStart = new Date(event.start);
+                                    const eventEnd = new Date(event.end);
+
+                                    // Calculate days visible in this week
+                                    const daysVisibleInWeek = Math.min(
+                                      differenceInDays(eventEnd, weekStart) + 1,
+                                      7 // Maximum days in a week
+                                    );
+
+                                    return (
+                                      <div
+                                        className='bg-main hover:bg-main/80 absolute left-0 z-10 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                                        style={{
+                                          width: `calc(${daysVisibleInWeek * 100}% - 8px)`,
+                                          maxWidth: `calc(${daysVisibleInWeek * 100}% - 8px)`,
+                                          top: `calc(${30 + eventIndex * 22}px)` // Stack continuing events
+                                        }}
+                                        key={`continuing-${event.id}`}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDialogOpenClose(true, date, event);
+                                        }}>
+                                        {event.title}
+                                      </div>
+                                    );
+                                  })}
+                              </div>
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
                   );
                 }
               }}
@@ -355,24 +453,84 @@ export default function Page() {
           ) : (
             <div className='h-[calc(100%-8px)] w-full rounded-md border md:h-full'>
               <div className='grid h-full grid-cols-7'>
-                {currentWeek.map((day, index) => (
-                  <div
-                    key={index}
-                    className={`flex cursor-pointer flex-col border-r p-2 last:border-r-0 ${format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-accent/30' : ''} ${date && format(day, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd') ? 'ring-main rounded-md ring-1' : ''}`}
-                    onClick={() => handleDialogOpenClose(true, day)}>
-                    <div className='mb-2 text-center'>
-                      <div className='text-muted-foreground text-xs'>{format(day, 'E', { locale: ja })}</div>
-                      <div
-                        className={`text-sm font-medium ${format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'text-primary font-bold' : ''} `}>
-                        {format(day, 'd')}
+                {currentWeek.map((day, dateIndex) => {
+                  // 1. Find single-day events for this date
+                  const singleDayEvents = events.filter(
+                    (event) => format(day, 'yyyy-MM-dd') === event.start && event.start === event.end
+                  );
+
+                  // 2. Find multi-day events that START on this specific date
+                  const multiDayEventsStartingHere = events.filter((event) => {
+                    const eventStart = new Date(event.start);
+                    const eventEnd = new Date(event.end);
+                    return (
+                      format(day, 'yyyy-MM-dd') === format(eventStart, 'yyyy-MM-dd') &&
+                      format(eventEnd, 'yyyy-MM-dd') !== format(eventStart, 'yyyy-MM-dd')
+                    );
+                  });
+
+                  // 3. Find multi-day events that CONTINUE through this date (started in previous week)
+                  const continuingEvents = events.filter((event) => {
+                    const eventStart = new Date(event.start);
+                    const eventEnd = new Date(event.end);
+                    return (
+                      format(day, 'yyyy-MM-dd') > format(eventStart, 'yyyy-MM-dd') &&
+                      format(day, 'yyyy-MM-dd') <= format(eventEnd, 'yyyy-MM-dd') &&
+                      dateIndex === 0 // Only show on the first day of the week
+                    );
+                  });
+
+                  return (
+                    <div
+                      key={dateIndex}
+                      className={`relative flex cursor-pointer flex-col border-r py-2 last:border-r-0 ${
+                        format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-accent/30' : ''
+                      } ${
+                        date && format(day, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
+                          ? 'ring-main rounded-md ring-1'
+                          : ''
+                      }`}
+                      onClick={() => handleDialogOpenClose(true, day)}>
+                      <div className='mb-2 text-center'>
+                        <div className='text-muted-foreground text-xs'>{format(day, 'E', { locale: ja })}</div>
+                        <div
+                          className={`text-sm font-medium ${
+                            format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
+                              ? 'text-primary font-bold'
+                              : ''
+                          } `}>
+                          {format(day, 'd')}
+                        </div>
                       </div>
-                    </div>
-                    <div className='flex-1'>
-                      {events.map((event) => {
-                        if (format(day, 'yyyy-MM-dd') === event.start) {
+                      <div className='relative min-h-[100px] flex-1'>
+                        {singleDayEvents.map((event) => (
+                          <div
+                            className='bg-main hover:bg-main/80 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                            key={event.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDialogOpenClose(true, day, event);
+                            }}>
+                            {event.title}
+                          </div>
+                        ))}
+
+                        {multiDayEventsStartingHere.map((event, eventIndex) => {
+                          const eventStart = new Date(event.start);
+                          const eventEnd = new Date(event.end);
+
+                          const daysLeft = Math.min(differenceInDays(eventEnd, eventStart) + 1, 7 - dateIndex);
+
+                          const topOffset = 30 + eventIndex * 22;
+
                           return (
                             <div
-                              className='bg-main hover:bg-main/80 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                              className='bg-main hover:bg-main/80 absolute left-0 z-10 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                              style={{
+                                width: `calc(${daysLeft * 100}% - 1px)`,
+                                maxWidth: `calc(${daysLeft * 100}% - 1px)`,
+                                top: `${topOffset}px`
+                              }}
                               key={event.id}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -381,12 +539,37 @@ export default function Page() {
                               {event.title}
                             </div>
                           );
-                        }
-                        return null;
-                      })}
+                        })}
+
+                        {continuingEvents.map((event, eventIndex) => {
+                          const eventEnd = new Date(event.end);
+                          const weekStart = day;
+
+                          const daysInThisWeek = Math.min(differenceInDays(eventEnd, weekStart) + 1, 7);
+
+                          const topOffset = 30 + (multiDayEventsStartingHere.length + eventIndex) * 22;
+
+                          return (
+                            <div
+                              className='bg-main hover:bg-main/80 absolute left-0 z-10 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                              style={{
+                                width: `calc(${daysInThisWeek * 100}% - 1px)`,
+                                maxWidth: `calc(${daysInThisWeek * 100}% - 1px)`,
+                                top: `${topOffset}px`
+                              }}
+                              key={`continuing-${event.id}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDialogOpenClose(true, day, event);
+                              }}>
+                              {event.title}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
