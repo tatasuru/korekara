@@ -120,29 +120,29 @@ export function TodoCard({
         </div>
       </CardHeader>
       <CardFooter className='items-center gap-2 pr-4 pl-12 md:pr-6 md:pl-20'>
-        <Badge className='gap-1 rounded-full px-1.5 py-1.5 text-xs leading-1' variant={todo.priority}>
+        <Badge className='gap-1 rounded-full px-1.5 py-1.5 text-[10px] leading-1' variant={todo.priority}>
           <Flag size={12} />
           {todo.priority?.toLocaleUpperCase()}
         </Badge>
         <CardDescription className='flex items-center gap-2'>
           <div className='flex items-center gap-1'>
             {expiredTodo ? (
-              <Badge className='items-center gap-1 rounded-full px-1.5 py-1.5 text-xs leading-1' variant='expired'>
+              <Badge className='items-center gap-1 rounded-full px-1.5 py-1.5 text-[10px] leading-1' variant='expired'>
                 <Clock size={12} />
                 期限切れ: {todo.due_date && format(new Date(todo.due_date), 'yyyy/MM/dd')}
               </Badge>
             ) : todoByToday ? (
-              <Badge className='items-center gap-1 rounded-full px-1.5 py-1.5 text-xs leading-1' variant='today'>
+              <Badge className='items-center gap-1 rounded-full px-1.5 py-1.5 text-[10px] leading-1' variant='today'>
                 <Clock size={12} />
                 今日: {todo.due_date && format(new Date(todo.due_date), 'yyyy/MM/dd')}
               </Badge>
             ) : todoByTomorrow ? (
-              <Badge className='items-center gap-1 rounded-full px-1.5 py-1.5 text-xs leading-1' variant='tomorrow'>
+              <Badge className='items-center gap-1 rounded-full px-1.5 py-1.5 text-[10px] leading-1' variant='tomorrow'>
                 <Clock size={12} />
                 明日: {todo.due_date && format(new Date(todo.due_date), 'yyyy/MM/dd')}
               </Badge>
             ) : (
-              <Badge className='items-center gap-1 rounded-full px-1.5 py-1.5 text-xs leading-1' variant='outline'>
+              <Badge className='items-center gap-1 rounded-full px-1.5 py-1.5 text-[10px] leading-1' variant='outline'>
                 <Clock size={12} />
                 {todo.due_date ? format(new Date(todo.due_date), 'yyyy/MM/dd') : '期限なし'}
               </Badge>
