@@ -87,7 +87,7 @@ export function CalendarDialog({
   return (
     <Dialog open={open} onOpenChange={handleDialogOpenClose}>
       <DialogContent
-        className='p-4 sm:max-w-md'
+        className='p-4 sm:max-w-xl'
         onPointerDownOutside={(e) => {
           e.preventDefault();
           handleDialogOpenClose(false);
@@ -120,7 +120,7 @@ export function CalendarDialog({
             <Button
               variant={'outline'}
               className={cn(
-                'w-[150px] justify-start text-left font-normal',
+                'w-[250px] justify-start text-left font-normal',
                 !selectedStartDate && 'text-muted-foreground'
               )}
               onClick={() => toggleAccordion(1)}>
@@ -164,7 +164,7 @@ export function CalendarDialog({
             <Button
               variant={'outline'}
               className={cn(
-                'w-[150px] justify-start text-left font-normal',
+                'w-[250px] justify-start text-left font-normal',
                 !selectedEndDate && 'text-muted-foreground'
               )}
               onClick={() => toggleAccordion(2)}>

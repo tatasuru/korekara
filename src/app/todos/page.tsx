@@ -218,6 +218,18 @@ export default function Todos() {
     fetchTodos();
   }, []);
 
+  const toggleAccordion = (index: number) => {
+    const accordion = document.getElementById(`accordion-${index}`);
+    const accordions = document.querySelectorAll('.accordion');
+    accordions.forEach((acc) => {
+      if (acc !== accordion) {
+        acc.classList.add('hidden');
+      } else {
+        acc.classList.toggle('hidden');
+      }
+    });
+  };
+
   return (
     <div className='grid h-full grid-rows-[auto_auto_1fr] gap-4 md:flex md:grid-cols-2 md:flex-col'>
       <div className='flex w-full items-center gap-2 md:max-w-2xl'>
@@ -274,7 +286,7 @@ export default function Todos() {
       {isDesktop ? (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent
-            className='p-4 sm:max-w-md'
+            className='p-4 sm:max-w-xl'
             onPointerDownOutside={(e) => {
               e.preventDefault();
               setOpen(true);
@@ -294,47 +306,54 @@ export default function Todos() {
 
             <Separator />
 
-            <div className='flex flex-col gap-2'>
-              <Label>期限</Label>
-              <Popover>
-                <PopoverTrigger asChild className='w-full'>
-                  <Button
-                    variant={'outline'}
-                    className={cn(
-                      'justify-start text-left font-normal',
-                      selectedTodo?.due_date && 'text-muted-foreground'
-                    )}>
-                    <CalendarIcon />
-                    {selectedTodo?.due_date ? (
-                      format(new Date(selectedTodo.due_date), 'PPP', { locale: ja })
-                    ) : (
-                      <span>期限を決める</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align='start' className='flex w-auto flex-col space-y-2 p-2'>
-                  <div className='rounded-md border'>
-                    <Calendar
-                      mode='single'
-                      selected={selectedTodo?.due_date ? new Date(selectedTodo.due_date) : undefined}
-                      onSelect={(date) =>
-                        selectedTodo &&
-                        setSelectedTodo({ ...selectedTodo, due_date: date?.toLocaleDateString('ja-JP') })
-                      }
-                      locale={ja}
-                      formatters={{
-                        formatCaption: (jaDate) => {
-                          const date = new Date(jaDate);
-                          return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
-                        }
-                      }}
-                    />
-                  </div>
-                </PopoverContent>
-              </Popover>
+            <div className='flex flex-col items-center justify-between'>
+              <div className='flex w-full items-center justify-between'>
+                <Label>期限</Label>
+                <Button
+                  variant={'outline'}
+                  className={cn(
+                    'w-[250px] justify-start text-left font-normal',
+                    selectedTodo?.due_date && 'text-muted-foreground'
+                  )}
+                  onClick={() => toggleAccordion(1)}>
+                  <CalendarIcon />
+                  {selectedTodo?.due_date ? (
+                    format(new Date(selectedTodo.due_date), 'PPP', { locale: ja })
+                  ) : (
+                    <span>期限を決める</span>
+                  )}
+                </Button>
+              </div>
+              <div className='accordion hidden w-full transition-all' id='accordion-1'>
+                <Calendar
+                  mode='single'
+                  selected={selectedTodo?.due_date ? new Date(selectedTodo.due_date) : undefined}
+                  onSelect={(date) =>
+                    selectedTodo && setSelectedTodo({ ...selectedTodo, due_date: date?.toLocaleDateString('ja-JP') })
+                  }
+                  locale={ja}
+                  formatters={{
+                    formatCaption: (jaDate) => {
+                      const date = new Date(jaDate);
+                      return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
+                    }
+                  }}
+                  classNames={{
+                    months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1 w-full',
+                    month: 'space-y-4 w-full h-full flex flex-col',
+                    table: 'w-full h-full space-y-1',
+                    head_row: '',
+                    head: 'text-muted-foreground',
+                    head_cell: 'text-muted-foreground rounded-md w-6 font-normal text-[0.8rem]',
+                    row: 'w-full mt-2',
+                    cell: 'relative text-center text-sm focus-within:relative',
+                    day_selected: 'bg-main text-white hover:bg-main/90 hover:text-white'
+                  }}
+                />
+              </div>
             </div>
 
-            <div className='flex flex-col gap-2'>
+            <div className='flex justify-between gap-2'>
               <Label>優先度</Label>
               <Select
                 onValueChange={(value) =>
@@ -344,7 +363,7 @@ export default function Todos() {
                     priority: value as 'low' | 'medium' | 'high'
                   })
                 }>
-                <SelectTrigger className='w-full cursor-pointer'>
+                <SelectTrigger className='w-[250px] cursor-pointer'>
                   <div className='flex flex-1'>
                     {selectedTodo?.priority ? (
                       <Badge className='rounded-full' variant={selectedTodo.priority}>
@@ -354,7 +373,6 @@ export default function Todos() {
                       <span className='text-muted-foreground'>優先度を選択</span>
                     )}
                   </div>
-                  {/* <SelectValue className='hidden' /> */}
                 </SelectTrigger>
                 <SelectContent className='w-full'>
                   <SelectGroup>
@@ -394,7 +412,9 @@ export default function Todos() {
                     updateTodoContent({
                       id: selectedTodo.id,
                       title: selectedTodo.title,
-                      due_date: selectedTodo.due_date,
+                      due_date: selectedTodo?.due_date
+                        ? format(new Date(selectedTodo.due_date), 'yyyy-MM-dd')
+                        : undefined,
                       order: selectedTodo.order,
                       priority: selectedTodo.priority
                     });
@@ -406,7 +426,7 @@ export default function Todos() {
         </Dialog>
       ) : (
         <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent className=''>
+          <DrawerContent className='h-full !max-h-[80svh]'>
             <DrawerHeader className='p-0'>
               <DrawerTitle className='text-sm font-bold'></DrawerTitle>
               <DrawerDescription></DrawerDescription>
@@ -426,47 +446,54 @@ export default function Todos() {
 
               <Separator />
 
-              <div className='flex flex-col gap-2'>
-                <Label>期限</Label>
-                <Popover>
-                  <PopoverTrigger asChild className='w-full'>
-                    <Button
-                      variant={'outline'}
-                      className={cn(
-                        'justify-start text-left font-normal',
-                        selectedTodo?.due_date && 'text-muted-foreground'
-                      )}>
-                      <CalendarIcon />
-                      {selectedTodo?.due_date ? (
-                        format(new Date(selectedTodo.due_date), 'PPP', { locale: ja })
-                      ) : (
-                        <span>日付を選ぶ</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent align='start' className='flex w-auto flex-col space-y-2 p-2'>
-                    <div className='rounded-md border'>
-                      <Calendar
-                        mode='single'
-                        selected={selectedTodo?.due_date ? new Date(selectedTodo.due_date) : undefined}
-                        onSelect={(date) =>
-                          selectedTodo &&
-                          setSelectedTodo({ ...selectedTodo, due_date: date?.toLocaleDateString('ja-JP') })
-                        }
-                        locale={ja}
-                        formatters={{
-                          formatCaption: (jaDate) => {
-                            const date = new Date(jaDate);
-                            return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
-                          }
-                        }}
-                      />
-                    </div>
-                  </PopoverContent>
-                </Popover>
+              <div className='flex flex-col items-center justify-between'>
+                <div className='flex w-full items-center justify-between'>
+                  <Label>期限</Label>
+                  <Button
+                    variant={'outline'}
+                    className={cn(
+                      'w-[200px] justify-start text-left font-normal',
+                      selectedTodo?.due_date && 'text-muted-foreground'
+                    )}
+                    onClick={() => toggleAccordion(1)}>
+                    <CalendarIcon />
+                    {selectedTodo?.due_date ? (
+                      format(new Date(selectedTodo.due_date), 'PPP', { locale: ja })
+                    ) : (
+                      <span>期限を決める</span>
+                    )}
+                  </Button>
+                </div>
+                <div className='accordion hidden w-full transition-all' id='accordion-1'>
+                  <Calendar
+                    mode='single'
+                    selected={selectedTodo?.due_date ? new Date(selectedTodo.due_date) : undefined}
+                    onSelect={(date) =>
+                      selectedTodo && setSelectedTodo({ ...selectedTodo, due_date: date?.toLocaleDateString('ja-JP') })
+                    }
+                    locale={ja}
+                    formatters={{
+                      formatCaption: (jaDate) => {
+                        const date = new Date(jaDate);
+                        return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
+                      }
+                    }}
+                    classNames={{
+                      months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1 w-full',
+                      month: 'space-y-4 w-full h-full flex flex-col',
+                      table: 'w-full h-full space-y-1',
+                      head_row: '',
+                      head: 'text-muted-foreground',
+                      head_cell: 'text-muted-foreground rounded-md w-6 font-normal text-[0.8rem]',
+                      row: 'w-full mt-2',
+                      cell: 'relative text-center text-sm focus-within:relative',
+                      day_selected: 'bg-main text-white hover:bg-main/90 hover:text-white'
+                    }}
+                  />
+                </div>
               </div>
 
-              <div className='flex flex-col gap-2'>
+              <div className='flex justify-between gap-2'>
                 <Label>優先度</Label>
                 <Select
                   onValueChange={(value) =>
@@ -476,7 +503,7 @@ export default function Todos() {
                       priority: value as 'low' | 'medium' | 'high'
                     })
                   }>
-                  <SelectTrigger className='w-full cursor-pointer'>
+                  <SelectTrigger className='w-[200px] cursor-pointer'>
                     <div className='flex flex-1'>
                       {selectedTodo?.priority ? (
                         <Badge className='rounded-full' variant={selectedTodo.priority}>
@@ -486,7 +513,6 @@ export default function Todos() {
                         <span className='text-muted-foreground'>優先度を選択</span>
                       )}
                     </div>
-                    {/* <SelectValue className='hidden' /> */}
                   </SelectTrigger>
                   <SelectContent className='w-full'>
                     <SelectGroup>
@@ -523,7 +549,9 @@ export default function Todos() {
                     updateTodoContent({
                       id: selectedTodo.id,
                       title: selectedTodo.title,
-                      due_date: selectedTodo.due_date,
+                      due_date: selectedTodo?.due_date
+                        ? format(new Date(selectedTodo.due_date), 'yyyy-MM-dd')
+                        : undefined,
                       order: selectedTodo.order,
                       priority: selectedTodo.priority
                     });
