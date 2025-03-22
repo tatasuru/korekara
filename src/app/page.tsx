@@ -385,6 +385,7 @@ export default function Page() {
                                 {multiDayEventsStartingHere.map((event, eventIndex) => {
                                   const eventStart = new Date(event.start);
                                   const eventEnd = new Date(event.end);
+                                  const topOffset = 30 + eventIndex * 22;
 
                                   // Calculate days visible in this week (may continue to next week)
                                   const daysVisibleInWeek = Math.min(
@@ -399,7 +400,7 @@ export default function Page() {
                                       style={{
                                         width: `calc(${daysVisibleInWeek * 100}% - 8px)`,
                                         maxWidth: `calc(${daysVisibleInWeek * 100}% - 8px)`,
-                                        top: `calc(${30 + eventIndex * 22}px)` // Stack multi-day events
+                                        top: `calc(${topOffset}px)` // Stack multi-day events
                                       }}
                                       key={event.id}
                                       onClick={(e) => {
@@ -414,9 +415,8 @@ export default function Page() {
                                 {/* Render multi-day events that CONTINUE from previous week */}
                                 {dateIndex === 0 &&
                                   continuingEvents.map((event, eventIndex) => {
-                                    const eventStart = new Date(event.start);
                                     const eventEnd = new Date(event.end);
-
+                                    const topOffset = 30 + eventIndex * 22;
                                     // Calculate days visible in this week
                                     const daysVisibleInWeek = Math.min(
                                       differenceInDays(eventEnd, weekStart) + 1,
@@ -429,7 +429,7 @@ export default function Page() {
                                         style={{
                                           width: `calc(${daysVisibleInWeek * 100}% - 8px)`,
                                           maxWidth: `calc(${daysVisibleInWeek * 100}% - 8px)`,
-                                          top: `calc(${30 + eventIndex * 22}px)` // Stack continuing events
+                                          top: `calc(${topOffset}px)` // Stack continuing events
                                         }}
                                         key={`continuing-${event.id}`}
                                         onClick={(e) => {
@@ -518,9 +518,7 @@ export default function Page() {
                         {multiDayEventsStartingHere.map((event, eventIndex) => {
                           const eventStart = new Date(event.start);
                           const eventEnd = new Date(event.end);
-
                           const daysLeft = Math.min(differenceInDays(eventEnd, eventStart) + 1, 7 - dateIndex);
-
                           const topOffset = 30 + eventIndex * 22;
 
                           return (

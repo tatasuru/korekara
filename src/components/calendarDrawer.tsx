@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/shadcn-ui/input';
 import { Label } from '@/components/shadcn-ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn-ui/popover';
+import { ScrollArea, ScrollBar } from '@/components/shadcn-ui/scroll-area';
 import { Separator } from '@/components/shadcn-ui/separator';
 import { Switch } from '@/components/shadcn-ui/switch';
 import { cn } from '@/lib/utils';
@@ -73,49 +74,63 @@ export function CalendarDrawer({
     setIsAllDay(true);
   };
 
+  const toggleAccordion = (index: number) => {
+    const accordion = document.getElementById(`accordion-${index}`);
+    const accordions = document.querySelectorAll('.accordion');
+    accordions.forEach((acc) => {
+      if (acc !== accordion) {
+        acc.classList.add('hidden');
+      } else {
+        acc.classList.toggle('hidden');
+      }
+    });
+  };
+
   return (
     <Drawer open={open} onOpenChange={handleDialogOpenClose}>
-      <DrawerContent className=''>
+      <DrawerContent className='h-full !max-h-[98svh]'>
         <DrawerHeader className='p-0'>
           <DrawerTitle className='text-sm font-bold'></DrawerTitle>
           <DrawerDescription></DrawerDescription>
         </DrawerHeader>
 
-        <div className='grid gap-4 p-4'>
-          <Input
-            placeholder='タイトル'
-            defaultValue={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            className='selection:bg-main/80 w-full rounded-none border-0 text-2xl shadow-none ring-0 selection:text-white focus:shadow-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0'
-          />
-
-          <Separator />
-
-          <div className='flex items-center justify-between space-x-2'>
-            <Label htmlFor='all-day'>終日</Label>
-            <Switch
-              id='all-day'
-              className='data-[state=checked]:bg-main'
-              defaultChecked={isAllDay}
-              onCheckedChange={(checked) => setIsAllDay(checked)}
+        <ScrollArea className='h-full overflow-y-auto'>
+          <div className='grid gap-4 p-4'>
+            <Input
+              placeholder='タイトル'
+              defaultValue={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              className='selection:bg-main/80 w-full rounded-none border-0 text-2xl shadow-none ring-0 selection:text-white focus:shadow-none focus:ring-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0'
             />
-          </div>
 
-          <div className='flex items-center justify-between space-x-2'>
-            <Label htmlFor='all-day'>開始</Label>
-            <Popover>
-              <PopoverTrigger asChild>
+            <Separator />
+
+            <div className='flex items-center justify-between space-x-2'>
+              <Label htmlFor='all-day'>終日</Label>
+              <Switch
+                id='all-day'
+                size={'default'}
+                className='data-[state=checked]:bg-main'
+                defaultChecked={isAllDay}
+                onCheckedChange={(checked) => setIsAllDay(checked)}
+              />
+            </div>
+
+            <div className='flex flex-col items-center justify-between'>
+              <div className='flex w-full items-center justify-between'>
+                <Label htmlFor='all-day'>開始</Label>
                 <Button
                   variant={'outline'}
                   className={cn(
-                    'w-[240px] justify-start text-left font-normal',
+                    'w-fit justify-start text-left font-normal',
                     !selectedStartDate && 'text-muted-foreground'
-                  )}>
+                  )}
+                  onClick={() => toggleAccordion(1)}>
                   <CalendarIcon />
                   {selectedStartDate ? format(selectedStartDate, 'PPP', { locale: ja }) : <span>開始日を選択</span>}
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className='w-auto p-0' align='start'>
+              </div>
+              <div className='accordion hidden w-full transition-all' id='accordion-1'>
                 <Calendar
                   mode='single'
                   locale={ja}
@@ -130,26 +145,36 @@ export function CalendarDrawer({
                       return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
                     }
                   }}
+                  classNames={{
+                    months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1 w-full',
+                    month: 'space-y-4 w-full h-full flex flex-col',
+                    table: 'w-full h-full space-y-1',
+                    head_row: '',
+                    head: 'text-muted-foreground',
+                    head_cell: 'text-muted-foreground rounded-md w-6 font-normal text-[0.8rem]',
+                    row: 'w-full mt-2',
+                    cell: 'relative text-center text-sm focus-within:relative',
+                    day_selected: 'bg-main text-white hover:bg-main/90 hover:text-white'
+                  }}
                 />
-              </PopoverContent>
-            </Popover>
-          </div>
+              </div>
+            </div>
 
-          <div className='flex items-center justify-between space-x-2'>
-            <Label htmlFor='all-day'>終了</Label>
-            <Popover>
-              <PopoverTrigger asChild>
+            <div className='flex flex-col items-center justify-between'>
+              <div className='flex w-full items-center justify-between'>
+                <Label htmlFor='all-day'>終了</Label>
                 <Button
                   variant={'outline'}
                   className={cn(
-                    'w-[240px] justify-start text-left font-normal',
+                    'w-fit justify-start text-left font-normal',
                     !selectedEndDate && 'text-muted-foreground'
-                  )}>
+                  )}
+                  onClick={() => toggleAccordion(2)}>
                   <CalendarIcon />
                   {selectedEndDate ? format(selectedEndDate, 'PPP', { locale: ja }) : <span>終了日を選択</span>}
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className='w-auto p-0' align='start'>
+              </div>
+              <div className='accordion hidden w-full transition-all' id='accordion-2'>
                 <Calendar
                   mode='single'
                   locale={ja}
@@ -164,11 +189,22 @@ export function CalendarDrawer({
                       return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
                     }
                   }}
+                  classNames={{
+                    months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1 w-full',
+                    month: 'space-y-4 w-full h-full flex flex-col',
+                    table: 'w-full h-full space-y-1',
+                    head_row: '',
+                    head: 'text-muted-foreground',
+                    head_cell: 'text-muted-foreground rounded-md w-6 font-normal text-[0.8rem]',
+                    row: 'w-full mt-2',
+                    cell: 'relative text-center text-sm focus-within:relative',
+                    day_selected: 'bg-main text-white hover:bg-main/90 hover:text-white'
+                  }}
                 />
-              </PopoverContent>
-            </Popover>
+              </div>
+            </div>
           </div>
-        </div>
+        </ScrollArea>
 
         <DrawerFooter>
           <Button
@@ -198,19 +234,20 @@ export function CalendarDrawer({
           </Button>
           {event && (
             <Button
-              variant={'destructive'}
+              variant={'outline'}
               onClick={() => {
                 deleteEvent(event?.id || 0);
                 handleDialogOpenClose(false);
                 resetValues();
-              }}>
+              }}
+              className='text-destructive hover:bg-destructive border-destructive hover:text-white'>
               削除する
             </Button>
           )}
           <DrawerClose asChild>
             <Button
               type='button'
-              variant='outline'
+              variant='ghost'
               onClick={() => {
                 handleDialogOpenClose(false);
                 resetValues();

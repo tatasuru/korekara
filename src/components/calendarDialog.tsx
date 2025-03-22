@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/shadcn-ui/accordion';
 import { Button } from '@/components/shadcn-ui/button';
 import { Calendar } from '@/components/shadcn-ui/calendar';
 import {
@@ -71,6 +72,18 @@ export function CalendarDialog({
     setIsAllDay(true);
   };
 
+  const toggleAccordion = (index: number) => {
+    const accordion = document.getElementById(`accordion-${index}`);
+    const accordions = document.querySelectorAll('.accordion');
+    accordions.forEach((acc) => {
+      if (acc !== accordion) {
+        acc.classList.add('hidden');
+      } else {
+        acc.classList.toggle('hidden');
+      }
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleDialogOpenClose}>
       <DialogContent
@@ -94,104 +107,97 @@ export function CalendarDialog({
           <Label htmlFor='all-day'>終日</Label>
           <Switch
             id='all-day'
+            size={'default'}
             className='data-[state=checked]:bg-main'
             defaultChecked={isAllDay}
             onCheckedChange={(checked) => setIsAllDay(checked)}
           />
         </div>
 
-        <div className='flex items-center justify-between space-x-2'>
-          <Label htmlFor='all-day'>開始</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={'outline'}
-                className={cn(
-                  'w-[240px] justify-start text-left font-normal',
-                  !selectedStartDate && 'text-muted-foreground'
-                )}>
-                <CalendarIcon />
-                {selectedStartDate ? format(selectedStartDate, 'PPP', { locale: ja }) : <span>開始日を選択</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className='w-auto p-0' align='start'>
-              <Calendar
-                mode='single'
-                locale={ja}
-                defaultMonth={selectedStartDate}
-                selected={selectedStartDate}
-                onSelect={(newDate) => {
-                  setSelectedStartDate(newDate);
-                }}
-                formatters={{
-                  formatCaption: (jaDate) => {
-                    const date = new Date(jaDate);
-                    return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
-                  }
-                }}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <div className='flex items-center justify-between space-x-2'>
-          <Label htmlFor='all-day'>終了</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={'outline'}
-                className={cn(
-                  'w-[240px] justify-start text-left font-normal',
-                  !selectedEndDate && 'text-muted-foreground'
-                )}>
-                <CalendarIcon />
-                {selectedEndDate ? format(selectedEndDate, 'PPP', { locale: ja }) : <span>終了日を選択</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className='w-auto p-0' align='start'>
-              <Calendar
-                mode='single'
-                locale={ja}
-                defaultMonth={selectedEndDate}
-                selected={selectedEndDate}
-                onSelect={(newDate) => {
-                  setSelectedEndDate(newDate);
-                }}
-                formatters={{
-                  formatCaption: (jaDate) => {
-                    const date = new Date(jaDate);
-                    return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
-                  }
-                }}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <DialogFooter className={cn('w-full items-center', event ? 'md:justify-between' : 'md:justify-end')}>
-          {event && (
+        <div className='flex flex-col items-center justify-between'>
+          <div className='flex w-full items-center justify-between'>
+            <Label htmlFor='all-day'>開始</Label>
             <Button
-              variant={'destructive'}
-              onClick={() => {
-                deleteEvent(event?.id || 0);
-                handleDialogOpenClose(false);
-                resetValues();
-              }}>
-              削除する
+              variant={'outline'}
+              className={cn('w-fit justify-start text-left font-normal', !selectedStartDate && 'text-muted-foreground')}
+              onClick={() => toggleAccordion(1)}>
+              <CalendarIcon />
+              {selectedStartDate ? format(selectedStartDate, 'PPP', { locale: ja }) : <span>開始日を選択</span>}
             </Button>
-          )}
-          <div className='flex items-center gap-2'>
-            <DialogClose asChild>
-              <Button
-                type='button'
-                variant='outline'
-                onClick={() => {
-                  handleDialogOpenClose(false);
-                  resetValues();
-                }}>
-                キャンセル
-              </Button>
-            </DialogClose>
+          </div>
+          <div className='accordion hidden w-full transition-all' id='accordion-1'>
+            <Calendar
+              mode='single'
+              locale={ja}
+              defaultMonth={selectedStartDate}
+              selected={selectedStartDate}
+              onSelect={(newDate) => {
+                setSelectedStartDate(newDate);
+              }}
+              formatters={{
+                formatCaption: (jaDate) => {
+                  const date = new Date(jaDate);
+                  return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
+                }
+              }}
+              classNames={{
+                months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1 w-full',
+                month: 'space-y-4 w-full h-full flex flex-col',
+                table: 'w-full h-full space-y-1',
+                head_row: '',
+                head: 'text-muted-foreground',
+                head_cell: 'text-muted-foreground rounded-md w-6 font-normal text-[0.8rem]',
+                row: 'w-full mt-2',
+                cell: 'relative text-center text-sm focus-within:relative',
+                day_selected: 'bg-main text-white hover:bg-main/90 hover:text-white'
+              }}
+            />
+          </div>
+        </div>
+
+        <div className='flex flex-col items-center justify-between'>
+          <div className='flex w-full items-center justify-between'>
+            <Label htmlFor='all-day'>終了</Label>
+            <Button
+              variant={'outline'}
+              className={cn('w-fit justify-start text-left font-normal', !selectedEndDate && 'text-muted-foreground')}
+              onClick={() => toggleAccordion(2)}>
+              <CalendarIcon />
+              {selectedEndDate ? format(selectedEndDate, 'PPP', { locale: ja }) : <span>終了日を選択</span>}
+            </Button>
+          </div>
+          <div className='accordion hidden w-full transition-all' id='accordion-2'>
+            <Calendar
+              mode='single'
+              locale={ja}
+              defaultMonth={selectedEndDate}
+              selected={selectedEndDate}
+              onSelect={(newDate) => {
+                setSelectedEndDate(newDate);
+              }}
+              formatters={{
+                formatCaption: (jaDate) => {
+                  const date = new Date(jaDate);
+                  return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
+                }
+              }}
+              classNames={{
+                months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1 w-full',
+                month: 'space-y-4 w-full h-full flex flex-col',
+                table: 'w-full h-full space-y-1',
+                head_row: '',
+                head: 'text-muted-foreground',
+                head_cell: 'text-muted-foreground rounded-md w-6 font-normal text-[0.8rem]',
+                row: 'w-full mt-2',
+                cell: 'relative text-center text-sm focus-within:relative',
+                day_selected: 'bg-main text-white hover:bg-main/90 hover:text-white'
+              }}
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <div className='flex w-full flex-col gap-2 pt-6'>
             <Button
               type='button'
               variant='main'
@@ -221,6 +227,29 @@ export function CalendarDialog({
               }}>
               保存する
             </Button>
+            {/* <DialogClose asChild>
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={() => {
+                    handleDialogOpenClose(false);
+                    resetValues();
+                  }}>
+                  キャンセル
+                </Button>
+              </DialogClose> */}
+            {event && (
+              <Button
+                variant={'outline'}
+                onClick={() => {
+                  deleteEvent(event?.id || 0);
+                  handleDialogOpenClose(false);
+                  resetValues();
+                }}
+                className='text-destructive hover:bg-destructive border-destructive hover:text-white'>
+                削除する
+              </Button>
+            )}
           </div>
         </DialogFooter>
       </DialogContent>
