@@ -6,13 +6,12 @@ import { CalendarDialog } from '@/components/calendarDialog';
 import { CalendarDrawer } from '@/components/calendarDrawer';
 import { Button } from '@/components/shadcn-ui/button';
 import { Calendar } from '@/components/shadcn-ui/calendar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/utils/supabase/client';
 
 import {
-  addDays,
   addMonths,
   addWeeks,
   differenceInDays,
