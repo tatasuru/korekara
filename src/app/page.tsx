@@ -490,13 +490,15 @@ export default function Page() {
 
                                   return (
                                     <div
-                                      className='bg-main hover:bg-main/80 absolute mt-1 w-full truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                                      className='bg-main hover:bg-main/80 absolute left-0.5 mt-1 w-full truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
                                       key={event.id}
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleDialogOpenClose(true, date, event);
                                       }}
                                       style={{
+                                        width: 'calc(100% - 4px)',
+                                        maxWidth: 'calc(100% - 4px)',
                                         top: `${topOffset}px`
                                       }}>
                                       {event.title}
@@ -522,10 +524,10 @@ export default function Page() {
 
                                   return (
                                     <div
-                                      className='bg-main hover:bg-main/80 absolute left-0 z-10 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                                      className='bg-main hover:bg-main/80 absolute left-0.5 z-10 mt-1 truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
                                       style={{
-                                        width: `calc(${daysVisibleInWeek * 100}%)`,
-                                        maxWidth: `calc(${daysVisibleInWeek * 100}%)`,
+                                        width: `calc(${daysVisibleInWeek * 100}% - 4px)`,
+                                        maxWidth: `calc(${daysVisibleInWeek * 100}% - 4px)`,
                                         top: `${topOffset}px`
                                       }}
                                       key={event.id}
@@ -555,10 +557,10 @@ export default function Page() {
 
                                     return (
                                       <div
-                                        className='bg-main hover:bg-main/80 absolute left-0 z-10 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                                        className='bg-main hover:bg-main/80 absolute left-0.5 z-10 mt-1 truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
                                         style={{
-                                          width: `calc(${daysVisibleInWeek * 100}%)`,
-                                          maxWidth: `calc(${daysVisibleInWeek * 100}%)`,
+                                          width: `calc(${daysVisibleInWeek * 100}% - 4px)`,
+                                          maxWidth: `calc(${daysVisibleInWeek * 100}% - 4px)`,
                                           top: `${topOffset}px`
                                         }}
                                         key={`continuing-${event.id}`}
@@ -656,11 +658,11 @@ export default function Page() {
 
                           return (
                             <div
-                              className='bg-main hover:bg-main/80 absolute left-0 w-full truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                              className='bg-main hover:bg-main/80 absolute left-0.5 w-full truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
                               key={event.id}
                               style={{
-                                width: 'calc(100% - 1px)',
-                                maxWidth: 'calc(100% - 1px)',
+                                width: 'calc(100% - 4px)',
+                                maxWidth: 'calc(100% - 4px)',
                                 top: `${topOffset}px`
                               }}
                               onClick={(e) => {
@@ -683,10 +685,10 @@ export default function Page() {
 
                           return (
                             <div
-                              className='bg-main hover:bg-main/80 absolute left-0 z-10 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                              className='bg-main hover:bg-main/80 absolute left-0.5 z-10 truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
                               style={{
-                                width: `calc(${daysLeft * 100}% - 1px)`,
-                                maxWidth: `calc(${daysLeft * 100}% - 1px)`,
+                                width: `calc(${daysLeft * 100}% - 4px)`,
+                                maxWidth: `calc(${daysLeft * 100}% - 4px)`,
                                 top: `${topOffset}px`
                               }}
                               key={event.id}
@@ -710,10 +712,10 @@ export default function Page() {
 
                           return (
                             <div
-                              className='bg-main hover:bg-main/80 absolute left-0 z-10 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                              className='bg-main hover:bg-main/80 absolute left-0.5 z-10 truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
                               style={{
-                                width: `calc(${daysInThisWeek * 100}% - 1px)`,
-                                maxWidth: `calc(${daysInThisWeek * 100}% - 1px)`,
+                                width: `calc(${daysInThisWeek * 100}% - 4px)`,
+                                maxWidth: `calc(${daysInThisWeek * 100}% - 4px)`,
                                 top: `${topOffset}px`
                               }}
                               key={`continuing-${event.id}`}
