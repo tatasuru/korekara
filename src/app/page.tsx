@@ -48,6 +48,103 @@ export default function Page() {
 
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
+  // helper function to calculate event positions
+  const calculateEventPositions = (eventsForWeek: Event[]) => {
+    if (!eventsForWeek || eventsForWeek.length === 0) return {};
+
+    // ソート順を変更:
+    // 1. 開始日が早い順
+    // 2. 同じ開始日の場合、複数日イベントを先に（※優先順位を変更）
+    // 3. 同じ開始日の複数日イベントは長い順
+    const sortedEvents = [...eventsForWeek].sort((a, b) => {
+      const aStart = new Date(a.start).getTime();
+      const bStart = new Date(b.start).getTime();
+
+      // 開始日が異なる場合は開始日の早い順
+      if (aStart !== bStart) {
+        return aStart - bStart;
+      }
+
+      const aEnd = new Date(a.end).getTime();
+      const bEnd = new Date(b.end).getTime();
+
+      // 片方が単日イベントの場合、複数日イベントを優先（※変更点）
+      const aIsSingleDay = a.start === a.end;
+      const bIsSingleDay = b.start === b.end;
+
+      if (aIsSingleDay !== bIsSingleDay) {
+        return aIsSingleDay ? 1 : -1; // 複数日イベントを先に
+      }
+
+      // 両方とも単日、または両方とも複数日の場合は長いイベントを優先
+      return bEnd - aEnd;
+    });
+
+    // イベント位置の割り当て
+    const positions: Record<number, number> = {};
+    const tracks: Array<{
+      end: number; // 終了時間（タイムスタンプ）
+      startDates: string[]; // このトラックに配置されたイベントの開始日（日付文字列）
+      endDates: string[]; // このトラックに配置されたイベントの終了日（日付文字列）
+    }> = [];
+
+    sortedEvents.forEach((event) => {
+      const eventStart = new Date(event.start);
+      const eventEnd = new Date(event.end);
+
+      // 日付のみの文字列表現（YYYY-MM-DD形式）
+      const eventStartDateStr = format(eventStart, 'yyyy-MM-dd');
+      const eventEndDateStr = format(eventEnd, 'yyyy-MM-dd');
+
+      // 重なりを判定する関数
+      const doesOverlap = (track: (typeof tracks)[0]) => {
+        // このトラックの各イベントについて日付の重なりを確認
+        for (let i = 0; i < track.startDates.length; i++) {
+          const trackStartDate = track.startDates[i];
+          const trackEndDate = track.endDates[i];
+
+          // 日付の重なりチェック:
+          // 1. イベントの開始日がトラックの開始日と終了日の間にある または
+          // 2. イベントの終了日がトラックの開始日と終了日の間にある または
+          // 3. イベントがトラックのイベントを完全に包含する または
+          // 4. トラックのイベントがこのイベントを完全に包含する
+          if (
+            (eventStartDateStr >= trackStartDate && eventStartDateStr <= trackEndDate) ||
+            (eventEndDateStr >= trackStartDate && eventEndDateStr <= trackEndDate) ||
+            (eventStartDateStr <= trackStartDate && eventEndDateStr >= trackEndDate) ||
+            (trackStartDate <= eventStartDateStr && trackEndDate >= eventEndDateStr)
+          ) {
+            return true; // 重なりがある
+          }
+        }
+        return false; // 重なりがない
+      };
+
+      // 重ならないトラックを探す
+      let trackIndex = tracks.findIndex((track) => !doesOverlap(track));
+
+      if (trackIndex === -1) {
+        // 空きトラックがなければ新しいトラックを追加
+        trackIndex = tracks.length;
+        tracks.push({
+          end: 0,
+          startDates: [],
+          endDates: []
+        });
+      }
+
+      // イベントの位置を記録
+      positions[event.id] = trackIndex;
+
+      // トラックの情報を更新
+      tracks[trackIndex].end = eventEnd.getTime();
+      tracks[trackIndex].startDates.push(eventStartDateStr);
+      tracks[trackIndex].endDates.push(eventEndDateStr);
+    });
+
+    return positions;
+  };
+
   // Generate week days when date changes
   useEffect(() => {
     if (date) {
@@ -156,7 +253,6 @@ export default function Page() {
 
   // Create events
   const createEvent = async (scheduleData: Pick<Event, 'title' | 'start' | 'end' | 'all_day'>) => {
-    console.log(scheduleData);
     const { data, error } = await supabase
       .from('calendar')
       .insert([
@@ -321,9 +417,27 @@ export default function Page() {
                   const weekStart = props.dates[0];
                   const weekEnd = props.dates[props.dates.length - 1];
 
+                  // 1. この週全体に関わるイベントを収集（週をまたぐイベントも含む）
+                  const eventsForWeek = events.filter((event) => {
+                    const eventStart = new Date(event.start);
+                    const eventEnd = new Date(event.end);
+
+                    // 週の範囲内に少なくとも1日含まれているイベント
+                    return (
+                      (eventStart <= weekEnd && eventEnd >= weekStart) ||
+                      (eventStart >= weekStart && eventStart <= weekEnd) ||
+                      (eventEnd >= weekStart && eventEnd <= weekEnd)
+                    );
+                  });
+
+                  // 2. すべてのイベントの位置を一括で計算（週全体で）
+                  const positions = calculateEventPositions(eventsForWeek);
+
                   return (
                     <tr className='gird relative mt-2 w-full grid-cols-7 border-b'>
                       {props.dates.map((date, dateIndex) => {
+                        const dateStr = format(date, 'yyyy-MM-dd');
+
                         // 1. Find single-day events for this date
                         const singleDayEvents = events.filter(
                           (event) => format(date, 'yyyy-MM-dd') === event.start && event.start === event.end
@@ -369,8 +483,10 @@ export default function Page() {
                               </div>
                               <div className='min-h-[30px] overflow-hidden'>
                                 {/* Render single-day events */}
-                                {singleDayEvents.map((event, eventIndex) => {
-                                  const topOffset = 28 + eventIndex * 22;
+                                {singleDayEvents.map((event) => {
+                                  // 週全体で計算された位置を使用
+                                  const position = positions[event.id] !== undefined ? positions[event.id] : 0;
+                                  const topOffset = 28 + position * 22; // 2pxのマージンを追加
 
                                   return (
                                     <div
@@ -381,7 +497,7 @@ export default function Page() {
                                         handleDialogOpenClose(true, date, event);
                                       }}
                                       style={{
-                                        top: `calc(${topOffset}px)` // Stack multi-day events
+                                        top: `${topOffset}px`
                                       }}>
                                       {event.title}
                                     </div>
@@ -389,15 +505,18 @@ export default function Page() {
                                 })}
 
                                 {/* Render multi-day events that START on this date */}
-                                {multiDayEventsStartingHere.map((event, eventIndex) => {
+                                {multiDayEventsStartingHere.map((event) => {
                                   const eventStart = new Date(event.start);
                                   const eventEnd = new Date(event.end);
-                                  const topOffset = 28 + eventIndex * 22;
+
+                                  // 週全体で計算された位置を使用
+                                  const position = positions[event.id] !== undefined ? positions[event.id] : 0;
+                                  const topOffset = 28 + position * 22;
 
                                   // Calculate days visible in this week (may continue to next week)
                                   const daysVisibleInWeek = Math.min(
                                     differenceInDays(weekEnd, eventStart) + 2,
-                                    differenceInDays(eventEnd, eventStart) + 2,
+                                    differenceInDays(eventEnd, eventStart) + 1,
                                     7 - dateIndex // Don't go beyond current week
                                   );
 
@@ -405,9 +524,9 @@ export default function Page() {
                                     <div
                                       className='bg-main hover:bg-main/80 absolute left-0 z-10 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
                                       style={{
-                                        width: `calc(${daysVisibleInWeek * 100}% - 8px)`,
-                                        maxWidth: `calc(${daysVisibleInWeek * 100}% - 8px)`,
-                                        top: `calc(${topOffset}px)` // Stack multi-day events
+                                        width: `calc(${daysVisibleInWeek * 100}%)`,
+                                        maxWidth: `calc(${daysVisibleInWeek * 100}%)`,
+                                        top: `${topOffset}px`
                                       }}
                                       key={event.id}
                                       onClick={(e) => {
@@ -421,9 +540,13 @@ export default function Page() {
 
                                 {/* Render multi-day events that CONTINUE from previous week */}
                                 {dateIndex === 0 &&
-                                  continuingEvents.map((event, eventIndex) => {
+                                  continuingEvents.map((event) => {
                                     const eventEnd = new Date(event.end);
-                                    const topOffset = 28 + eventIndex * 22;
+
+                                    // 週全体で計算された位置を使用
+                                    const position = positions[event.id] !== undefined ? positions[event.id] : 0;
+                                    const topOffset = 28 + position * 22; // 2pxのマージンを追加
+
                                     // Calculate days visible in this week
                                     const daysVisibleInWeek = Math.min(
                                       differenceInDays(eventEnd, weekStart) + 1,
@@ -434,9 +557,9 @@ export default function Page() {
                                       <div
                                         className='bg-main hover:bg-main/80 absolute left-0 z-10 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
                                         style={{
-                                          width: `calc(${daysVisibleInWeek * 100}% - 8px)`,
-                                          maxWidth: `calc(${daysVisibleInWeek * 100}% - 8px)`,
-                                          top: `calc(${topOffset}px)` // Stack continuing events
+                                          width: `calc(${daysVisibleInWeek * 100}%)`,
+                                          maxWidth: `calc(${daysVisibleInWeek * 100}%)`,
+                                          top: `${topOffset}px`
                                         }}
                                         key={`continuing-${event.id}`}
                                         onClick={(e) => {
@@ -461,6 +584,22 @@ export default function Page() {
             <div className='h-[calc(100%-8px)] w-full rounded-md border md:h-full'>
               <div className='grid h-full grid-cols-7'>
                 {currentWeek.map((day, dateIndex) => {
+                  const dateStr = format(day, 'yyyy-MM-dd');
+
+                  // 週全体に関わるイベントを収集
+                  const weekEvents = events.filter((event) => {
+                    const eventStart = new Date(event.start);
+                    const eventEnd = new Date(event.end);
+                    return (
+                      (eventStart <= currentWeek[6] && eventEnd >= currentWeek[0]) ||
+                      (eventStart >= currentWeek[0] && eventStart <= currentWeek[6]) ||
+                      (eventEnd >= currentWeek[0] && eventEnd <= currentWeek[6])
+                    );
+                  });
+
+                  // 週全体のイベント位置を計算
+                  const positions = calculateEventPositions(weekEvents);
+
                   // 1. Find single-day events for this date
                   const singleDayEvents = events.filter(
                     (event) => format(day, 'yyyy-MM-dd') === event.start && event.start === event.end
@@ -510,27 +649,41 @@ export default function Page() {
                         </div>
                       </div>
                       <div className='relative min-h-[100px] flex-1'>
-                        {singleDayEvents.map((event) => (
-                          <div
-                            className='bg-main hover:bg-main/80 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
-                            key={event.id}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDialogOpenClose(true, day, event);
-                            }}>
-                            {event.title}
-                          </div>
-                        ))}
-
-                        {multiDayEventsStartingHere.map((event, eventIndex) => {
-                          const eventStart = new Date(event.start);
-                          const eventEnd = new Date(event.end);
-                          const daysLeft = Math.min(differenceInDays(eventEnd, eventStart) + 1, 7 - dateIndex);
-                          const topOffset = eventIndex * 22;
+                        {singleDayEvents.map((event) => {
+                          // 計算された位置を使用
+                          const position = positions[event.id] !== undefined ? positions[event.id] : 0;
+                          const topOffset = position * 22 + 2;
 
                           return (
                             <div
-                              className='bg-main hover:bg-main/80 absolute left-0 z-10 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                              className='bg-main hover:bg-main/80 absolute left-0 w-full truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                              key={event.id}
+                              style={{
+                                width: 'calc(100% - 1px)',
+                                maxWidth: 'calc(100% - 1px)',
+                                top: `${topOffset}px`
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDialogOpenClose(true, day, event);
+                              }}>
+                              {event.title}
+                            </div>
+                          );
+                        })}
+
+                        {multiDayEventsStartingHere.map((event) => {
+                          const eventStart = new Date(event.start);
+                          const eventEnd = new Date(event.end);
+                          const daysLeft = Math.min(differenceInDays(eventEnd, eventStart) + 1, 7 - dateIndex);
+
+                          // 計算された位置を使用
+                          const position = positions[event.id] !== undefined ? positions[event.id] : 0;
+                          const topOffset = position * 22 + 2;
+
+                          return (
+                            <div
+                              className='bg-main hover:bg-main/80 absolute left-0 z-10 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
                               style={{
                                 width: `calc(${daysLeft * 100}% - 1px)`,
                                 maxWidth: `calc(${daysLeft * 100}% - 1px)`,
@@ -546,17 +699,18 @@ export default function Page() {
                           );
                         })}
 
-                        {continuingEvents.map((event, eventIndex) => {
+                        {continuingEvents.map((event) => {
                           const eventEnd = new Date(event.end);
                           const weekStart = day;
-
                           const daysInThisWeek = Math.min(differenceInDays(eventEnd, weekStart) + 1, 7);
 
-                          const topOffset = (multiDayEventsStartingHere.length + eventIndex) * 22;
+                          // 計算された位置を使用
+                          const position = positions[event.id] !== undefined ? positions[event.id] : 0;
+                          const topOffset = position * 22 + 2;
 
                           return (
                             <div
-                              className='bg-main hover:bg-main/80 absolute left-0 z-10 mt-1 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                              className='bg-main hover:bg-main/80 absolute left-0 z-10 truncate rounded px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
                               style={{
                                 width: `calc(${daysInThisWeek * 100}% - 1px)`,
                                 maxWidth: `calc(${daysInThisWeek * 100}% - 1px)`,
