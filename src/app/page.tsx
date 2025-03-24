@@ -4,24 +4,21 @@ import React, { useEffect, useState } from 'react';
 
 import { CalendarDialog } from '@/components/calendarDialog';
 import { CalendarDrawer } from '@/components/calendarDrawer';
-import { Badge } from '@/components/shadcn-ui/badge';
 import { Button } from '@/components/shadcn-ui/button';
 import { Calendar } from '@/components/shadcn-ui/calendar';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/shadcn-ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '@/components/shadcn-ui/dialog';
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/shadcn-ui/dialog';
-import { ScrollArea, ScrollBar } from '@/components/shadcn-ui/scroll-area';
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle
+} from '@/components/shadcn-ui/drawer';
+import { ScrollArea } from '@/components/shadcn-ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { cn } from '@/lib/utils';
 import { createClient } from '@/utils/supabase/client';
 
 import {
@@ -37,7 +34,7 @@ import {
   subWeeks
 } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { Clock, Edit, Flag, GripVertical, Plus, Trash } from 'lucide-react';
+import { Edit, Plus, Trash } from 'lucide-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Event {
@@ -239,8 +236,17 @@ export default function Page() {
 
       setSelectedDate(day);
 
-      setSelectedEvent(event);
-      setEditOpen(isOpen);
+      if (dialogOpen) {
+        setDialogOpen(false);
+      }
+
+      if (event) {
+        setSelectedEvent(event);
+        setEditOpen(isOpen);
+      } else {
+        setSelectedEvent(undefined);
+        setEditOpen(isOpen);
+      }
     } else {
       setEditOpen(isOpen);
       setSelectedDate(undefined);
@@ -253,8 +259,8 @@ export default function Page() {
       if (!date || (day && format(day, 'yyyy-MM-dd') !== format(date, 'yyyy-MM-dd'))) {
         setDate(day);
       }
+
       setSelectedDate(day);
-      console.log('event', event);
 
       if (event) {
         setSelectedEvent(event);
@@ -806,54 +812,117 @@ export default function Page() {
         </div>
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className='p-4 sm:max-w-xl'>
-          <DialogTitle className='text-sm font-bold'>予定を確認</DialogTitle>
-          <DialogDescription className='hidden' />
+      {isDesktop ? (
+        <Dialog open={dialogOpen} onOpenChange={() => handleDialogOpenClose({ isOpen: false })}>
+          <DialogContent className='p-4 sm:max-w-xl'>
+            <DialogTitle className='text-sm font-bold'>
+              {selectedDate && format(selectedDate, 'yyyy年MM月dd日(E)', { locale: ja })}の予定
+            </DialogTitle>
+            <DialogDescription className='hidden' />
 
-          <ScrollArea className='max-h-80'>
-            {events.map((event) => (
-              <Card key={event.id} className='gap-1 py-4'>
-                <CardHeader className='flex items-center justify-between'>
-                  <CardTitle>{event.title}</CardTitle>
-                  <div className='flex gap-1'>
-                    <Button type='button' size={'xs'} variant={'ghost'}>
-                      <Edit size={8} />
-                    </Button>
-                    <Button size={'xs'} variant={'ghost'} onClick={() => deleteEvent(event.id)}>
-                      <Trash size={8} className='text-destructive' />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardFooter>
-                  <CardDescription>
-                    <div className='flex items-center gap-2'>
-                      <Badge variant={event.all_day ? 'medium' : 'secondary'} className='rounded-full text-xs'>
-                        {event.all_day && '終日'}
-                      </Badge>
-                      {event.all_day ? (
-                        <p>{format(new Date(event.start), 'yyyy/MM/dd')}</p>
-                      ) : (
-                        <p>
-                          {format(new Date(event.start), 'yyyy/MM/dd HH:mm')} -{' '}
-                          {format(new Date(event.end), 'yyyy/MM/dd HH:mm')}
-                        </p>
-                      )}
+            <ScrollArea className='max-h-80'>
+              <div className='flex flex-col gap-2'>
+                {events.map((event) => (
+                  <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
+                    <div className='flex items-center'>
+                      <div className='mr-3 h-10 w-2 rounded-sm bg-amber-500'></div>
+                      <div>
+                        <p className='text-sm font-semibold'>{event.title}</p>
+                        <span className='text-xs text-gray-600'>
+                          {event.all_day
+                            ? '終日'
+                            : `${format(new Date(event.start), 'HH:mm')} - ${format(new Date(event.end), 'HH:mm')}`}
+                        </span>
+                      </div>
                     </div>
-                  </CardDescription>
-                </CardFooter>
-              </Card>
-            ))}
-          </ScrollArea>
+                    <div className='flex space-x-2'>
+                      <Button
+                        type='button'
+                        size={'xs'}
+                        variant={'ghost'}
+                        onClick={() => handleEditOpenClose({ isOpen: true, event })}>
+                        <Edit size={8} />
+                      </Button>
+                      <Button size={'xs'} variant={'ghost'} onClick={() => deleteEvent(event.id)}>
+                        <Trash size={8} className='text-destructive' />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
 
-          <DialogFooter>
-            <Button variant={'main'} size={'sm'}>
-              <Plus size={8} />
-              予定を追加
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter>
+              <Button
+                variant={'main'}
+                size={'sm'}
+                className='rounded-sm'
+                onClick={() => handleEditOpenClose({ isOpen: true, day: selectedDate })}>
+                <Plus size={8} />
+                予定を追加
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <Drawer open={dialogOpen} onOpenChange={() => handleDialogOpenClose({ isOpen: false })}>
+          <DrawerContent className='h-full !max-h-[98svh] gap-4 px-4'>
+            <DrawerHeader className='p-0'>
+              <DrawerTitle className='text-sm font-bold'>
+                {selectedDate && format(selectedDate, 'yyyy年MM月dd日(E)', { locale: ja })}の予定
+              </DrawerTitle>
+              <DrawerDescription className='hidden'></DrawerDescription>
+            </DrawerHeader>
+
+            <ScrollArea className='max-h-80'>
+              <div className='flex flex-col gap-2'>
+                {events.map((event) => (
+                  <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
+                    <div className='flex items-center'>
+                      <div className='mr-3 h-10 w-2 rounded-sm bg-amber-500'></div>
+                      <div>
+                        <p className='text-sm font-semibold'>{event.title}</p>
+                        <span className='text-xs text-gray-600'>
+                          {event.all_day
+                            ? '終日'
+                            : `${format(new Date(event.start), 'HH:mm')} - ${format(new Date(event.end), 'HH:mm')}`}
+                        </span>
+                      </div>
+                    </div>
+                    <div className='flex space-x-2'>
+                      <Button
+                        type='button'
+                        size={'xs'}
+                        variant={'ghost'}
+                        onClick={() => handleEditOpenClose({ isOpen: true, event })}>
+                        <Edit size={8} />
+                      </Button>
+                      <Button size={'xs'} variant={'ghost'} onClick={() => deleteEvent(event.id)}>
+                        <Trash size={8} className='text-destructive' />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+
+            <DrawerFooter className='px-0'>
+              <Button
+                variant={'main'}
+                size={'sm'}
+                onClick={() => handleEditOpenClose({ isOpen: true, day: selectedDate })}>
+                <Plus size={8} />
+                予定を追加
+              </Button>
+              <DrawerClose asChild>
+                <Button type='button' variant='ghost'>
+                  キャンセル
+                </Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      )}
 
       {/* edit modal */}
       {isDesktop ? (
