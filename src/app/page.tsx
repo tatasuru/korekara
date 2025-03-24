@@ -19,6 +19,7 @@ import {
 import { ScrollArea } from '@/components/shadcn-ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { cn } from '@/lib/utils';
 import { createClient } from '@/utils/supabase/client';
 
 import {
@@ -527,15 +528,14 @@ export default function Page() {
                                 </span>
                               </div>
                               <div className='min-h-[30px] overflow-hidden'>
-                                {/* Render single-day events */}
                                 {singleDayEvents.map((event) => {
                                   // 週全体で計算された位置を使用
                                   const position = positions[event.id] !== undefined ? positions[event.id] : 0;
-                                  const topOffset = 28 + position * 22; // 2pxのマージンを追加
+                                  const topOffset = isDesktop ? 30 + position * 22 : 30 + position * 16;
 
                                   return (
                                     <div
-                                      className='bg-main hover:bg-main/80 absolute left-0.5 w-full truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                                      className='bg-main hover:bg-main/80 absolute left-0.5 w-full truncate rounded-xs px-1 py-0.5 text-[8px] font-bold text-white md:text-xs'
                                       key={event.id}
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -555,14 +555,13 @@ export default function Page() {
                                   );
                                 })}
 
-                                {/* Render multi-day events that START on this date */}
                                 {multiDayEventsStartingHere.map((event) => {
                                   const eventStart = new Date(event.start);
                                   const eventEnd = new Date(event.end);
 
                                   // 週全体で計算された位置を使用
                                   const position = positions[event.id] !== undefined ? positions[event.id] : 0;
-                                  const topOffset = 28 + position * 22;
+                                  const topOffset = isDesktop ? 30 + position * 22 : 30 + position * 16;
 
                                   // Calculate days visible in this week (may continue to next week)
                                   const daysVisibleInWeek = Math.min(
@@ -573,7 +572,7 @@ export default function Page() {
 
                                   return (
                                     <div
-                                      className='bg-main hover:bg-main/80 absolute left-0.5 z-10 truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                                      className='bg-main hover:bg-main/80 absolute left-0.5 z-10 truncate rounded-xs px-1 py-0.5 text-[8px] font-bold text-white md:text-xs'
                                       style={{
                                         width: `calc(${daysVisibleInWeek * 100}% - 4px)`,
                                         maxWidth: `calc(${daysVisibleInWeek * 100}% - 4px)`,
@@ -593,14 +592,13 @@ export default function Page() {
                                   );
                                 })}
 
-                                {/* Render multi-day events that CONTINUE from previous week */}
                                 {dateIndex === 0 &&
                                   continuingEvents.map((event) => {
                                     const eventEnd = new Date(event.end);
 
                                     // 週全体で計算された位置を使用
                                     const position = positions[event.id] !== undefined ? positions[event.id] : 0;
-                                    const topOffset = 28 + position * 22; // 2pxのマージンを追加
+                                    const topOffset = isDesktop ? 30 + position * 22 : 30 + position * 16;
 
                                     // Calculate days visible in this week
                                     const daysVisibleInWeek = Math.min(
@@ -610,7 +608,7 @@ export default function Page() {
 
                                     return (
                                       <div
-                                        className='bg-main hover:bg-main/80 absolute left-0.5 z-10 truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                                        className='bg-main hover:bg-main/80 absolute left-0.5 z-10 truncate rounded-xs px-1 py-0.5 text-[8px] font-bold text-white md:text-xs'
                                         style={{
                                           width: `calc(${daysVisibleInWeek * 100}% - 4px)`,
                                           maxWidth: `calc(${daysVisibleInWeek * 100}% - 4px)`,
@@ -629,6 +627,25 @@ export default function Page() {
                                       </div>
                                     );
                                   })}
+
+                                {/* more than 3 schedule */}
+                                {/* {singleDayEvents.length + multiDayEventsStartingHere.length + continuingEvents.length >
+                                  2 && (
+                                  <div
+                                    className='absolute left-0.5 z-10 truncate rounded-xs px-1 py-0.5 text-[8px] font-bold md:text-xs'
+                                    style={{
+                                      width: 'calc(100% - 4px)',
+                                      maxWidth: 'calc(100% - 4px)',
+                                      top: isDesktop ? 28 + 2 * 22 : 30 + 2 * 16
+                                    }}>
+                                    他
+                                    {singleDayEvents.length +
+                                      multiDayEventsStartingHere.length +
+                                      continuingEvents.length -
+                                      2}
+                                    件...
+                                  </div>
+                                )} */}
                               </div>
                             </div>
                           </td>
@@ -802,6 +819,20 @@ export default function Page() {
                             </div>
                           );
                         })}
+
+                        {/* more than 3 schedule */}
+                        {/* {singleDayEvents.length + multiDayEventsStartingHere.length + continuingEvents.length > 2 && (
+                          <div
+                            className='absolute left-0.5 z-10 truncate rounded-xs px-1 py-0.5 text-[8px] font-bold md:text-xs'
+                            style={{
+                              width: 'calc(100% - 4px)',
+                              maxWidth: 'calc(100% - 4px)',
+                              top: isDesktop ? 28 + 2 * 22 : 30 + 2 * 16
+                            }}>
+                            他{singleDayEvents.length + multiDayEventsStartingHere.length + continuingEvents.length - 2}
+                            件...
+                          </div>
+                        )} */}
                       </div>
                     </div>
                   );
@@ -822,33 +853,40 @@ export default function Page() {
 
             <ScrollArea className='max-h-80'>
               <div className='flex flex-col gap-2'>
-                {events.map((event) => (
-                  <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
-                    <div className='flex items-center'>
-                      <div className='mr-3 h-10 w-2 rounded-sm bg-amber-500'></div>
-                      <div>
-                        <p className='text-sm font-semibold'>{event.title}</p>
-                        <span className='text-xs text-gray-600'>
-                          {event.all_day
-                            ? '終日'
-                            : `${format(new Date(event.start), 'HH:mm')} - ${format(new Date(event.end), 'HH:mm')}`}
-                        </span>
+                {events
+                  .filter(
+                    (event) =>
+                      format(new Date(event.start), 'yyyy-MM-dd') ===
+                      (selectedDate && format(selectedDate, 'yyyy-MM-dd'))
+                  )
+                  .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+                  .map((event) => (
+                    <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
+                      <div className='flex items-center'>
+                        <div className='mr-3 h-10 w-2 rounded-sm bg-amber-500'></div>
+                        <div>
+                          <p className='text-sm font-semibold'>{event.title}</p>
+                          <span className='text-xs text-gray-600'>
+                            {event.all_day
+                              ? '終日'
+                              : `${format(new Date(event.start), 'HH:mm')} - ${format(new Date(event.end), 'HH:mm')}`}
+                          </span>
+                        </div>
+                      </div>
+                      <div className='flex space-x-2'>
+                        <Button
+                          type='button'
+                          size={'xs'}
+                          variant={'ghost'}
+                          onClick={() => handleEditOpenClose({ isOpen: true, event })}>
+                          <Edit size={8} />
+                        </Button>
+                        <Button size={'xs'} variant={'ghost'} onClick={() => deleteEvent(event.id)}>
+                          <Trash size={8} className='text-destructive' />
+                        </Button>
                       </div>
                     </div>
-                    <div className='flex space-x-2'>
-                      <Button
-                        type='button'
-                        size={'xs'}
-                        variant={'ghost'}
-                        onClick={() => handleEditOpenClose({ isOpen: true, event })}>
-                        <Edit size={8} />
-                      </Button>
-                      <Button size={'xs'} variant={'ghost'} onClick={() => deleteEvent(event.id)}>
-                        <Trash size={8} className='text-destructive' />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </ScrollArea>
 
@@ -876,33 +914,40 @@ export default function Page() {
 
             <ScrollArea className='max-h-80'>
               <div className='flex flex-col gap-2'>
-                {events.map((event) => (
-                  <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
-                    <div className='flex items-center'>
-                      <div className='mr-3 h-10 w-2 rounded-sm bg-amber-500'></div>
-                      <div>
-                        <p className='text-sm font-semibold'>{event.title}</p>
-                        <span className='text-xs text-gray-600'>
-                          {event.all_day
-                            ? '終日'
-                            : `${format(new Date(event.start), 'HH:mm')} - ${format(new Date(event.end), 'HH:mm')}`}
-                        </span>
+                {events
+                  .filter(
+                    (event) =>
+                      format(new Date(event.start), 'yyyy-MM-dd') ===
+                      (selectedDate && format(selectedDate, 'yyyy-MM-dd'))
+                  )
+                  .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+                  .map((event) => (
+                    <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
+                      <div className='flex items-center'>
+                        <div className='mr-3 h-10 w-2 rounded-sm bg-amber-500'></div>
+                        <div>
+                          <p className='text-sm font-semibold'>{event.title}</p>
+                          <span className='text-xs text-gray-600'>
+                            {event.all_day
+                              ? '終日'
+                              : `${format(new Date(event.start), 'HH:mm')} - ${format(new Date(event.end), 'HH:mm')}`}
+                          </span>
+                        </div>
+                      </div>
+                      <div className='flex space-x-2'>
+                        <Button
+                          type='button'
+                          size={'xs'}
+                          variant={'ghost'}
+                          onClick={() => handleEditOpenClose({ isOpen: true, event })}>
+                          <Edit size={8} />
+                        </Button>
+                        <Button size={'xs'} variant={'ghost'} onClick={() => deleteEvent(event.id)}>
+                          <Trash size={8} className='text-destructive' />
+                        </Button>
                       </div>
                     </div>
-                    <div className='flex space-x-2'>
-                      <Button
-                        type='button'
-                        size={'xs'}
-                        variant={'ghost'}
-                        onClick={() => handleEditOpenClose({ isOpen: true, event })}>
-                        <Edit size={8} />
-                      </Button>
-                      <Button size={'xs'} variant={'ghost'} onClick={() => deleteEvent(event.id)}>
-                        <Trash size={8} className='text-destructive' />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </ScrollArea>
 
