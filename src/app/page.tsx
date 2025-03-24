@@ -489,7 +489,7 @@ export default function Page() {
 
                                   return (
                                     <div
-                                      className='bg-main hover:bg-main/80 absolute left-0.5 mt-1 w-full truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                                      className='bg-main hover:bg-main/80 absolute left-0.5 w-full truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
                                       key={event.id}
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -523,7 +523,7 @@ export default function Page() {
 
                                   return (
                                     <div
-                                      className='bg-main hover:bg-main/80 absolute left-0.5 z-10 mt-1 truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                                      className='bg-main hover:bg-main/80 absolute left-0.5 z-10 truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
                                       style={{
                                         width: `calc(${daysVisibleInWeek * 100}% - 4px)`,
                                         maxWidth: `calc(${daysVisibleInWeek * 100}% - 4px)`,
@@ -556,7 +556,7 @@ export default function Page() {
 
                                     return (
                                       <div
-                                        className='bg-main hover:bg-main/80 absolute left-0.5 z-10 mt-1 truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                                        className='bg-main hover:bg-main/80 absolute left-0.5 z-10 truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
                                         style={{
                                           width: `calc(${daysVisibleInWeek * 100}% - 4px)`,
                                           maxWidth: `calc(${daysVisibleInWeek * 100}% - 4px)`,

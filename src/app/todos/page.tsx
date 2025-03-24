@@ -589,8 +589,8 @@ export default function Todos() {
                 保存する
               </Button>
               <DrawerClose asChild>
-                <Button type='button' variant='outline'>
-                  Cancel
+                <Button type='button' variant='ghost'>
+                  キャンセル
                 </Button>
               </DrawerClose>
             </DrawerFooter>
