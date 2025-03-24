@@ -36,7 +36,7 @@ export function CalendarDialog({
   open,
   selectedDate,
   event,
-  handleDialogOpenClose,
+  handleEditOpenClose,
   updateEvent,
   deleteEvent,
   createEvent
@@ -44,7 +44,7 @@ export function CalendarDialog({
   open: boolean;
   selectedDate: Date;
   event?: Event;
-  handleDialogOpenClose: (isOpen: boolean) => void;
+  handleEditOpenClose: ({ isOpen }: { isOpen: boolean }) => void;
   updateEvent: (id: number, data: Pick<Event, 'title' | 'start' | 'end' | 'all_day'>) => void;
   deleteEvent: (id: number) => void;
   createEvent: (data: Pick<Event, 'title' | 'start' | 'end' | 'all_day'>) => void;
@@ -85,12 +85,17 @@ export function CalendarDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleDialogOpenClose}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        handleEditOpenClose({ isOpen });
+        resetValues();
+      }}>
       <DialogContent
         className='p-4 sm:max-w-xl'
         onPointerDownOutside={(e) => {
           e.preventDefault();
-          handleDialogOpenClose(false);
+          handleEditOpenClose({ isOpen: false });
         }}>
         <DialogTitle className='text-sm font-bold'>予定を編集</DialogTitle>
         <DialogDescription className='hidden' />
@@ -229,7 +234,7 @@ export function CalendarDialog({
                   });
                 }
 
-                handleDialogOpenClose(false);
+                handleEditOpenClose({ isOpen: false });
                 resetValues();
               }}>
               保存する
@@ -239,7 +244,7 @@ export function CalendarDialog({
                 variant={'outline'}
                 onClick={() => {
                   deleteEvent(event?.id || 0);
-                  handleDialogOpenClose(false);
+                  handleEditOpenClose({ isOpen: false });
                   resetValues();
                 }}
                 className='text-destructive hover:bg-destructive border-destructive hover:text-white'>

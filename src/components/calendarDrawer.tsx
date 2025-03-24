@@ -38,7 +38,7 @@ export function CalendarDrawer({
   open,
   selectedDate,
   event,
-  handleDialogOpenClose,
+  handleEditOpenClose,
   updateEvent,
   deleteEvent,
   createEvent
@@ -46,7 +46,7 @@ export function CalendarDrawer({
   open: boolean;
   selectedDate: Date;
   event?: Event;
-  handleDialogOpenClose: (isOpen: boolean) => void;
+  handleEditOpenClose: ({ isOpen }: { isOpen: boolean }) => void;
   updateEvent: (id: number, data: Pick<Event, 'title' | 'start' | 'end' | 'all_day'>) => void;
   deleteEvent: (id: number) => void;
   createEvent: (data: Pick<Event, 'title' | 'start' | 'end' | 'all_day'>) => void;
@@ -87,7 +87,7 @@ export function CalendarDrawer({
   };
 
   return (
-    <Drawer open={open} onOpenChange={handleDialogOpenClose}>
+    <Drawer open={open} onOpenChange={(isOpen) => handleEditOpenClose({ isOpen })}>
       <DrawerContent className='h-full !max-h-[98svh]'>
         <DrawerHeader className='p-0'>
           <DrawerTitle className='text-sm font-bold'></DrawerTitle>
@@ -228,7 +228,7 @@ export function CalendarDrawer({
                 });
               }
 
-              handleDialogOpenClose(false);
+              handleEditOpenClose({ isOpen: false });
               resetValues();
             }}>
             保存する
@@ -238,7 +238,7 @@ export function CalendarDrawer({
               variant={'outline'}
               onClick={() => {
                 deleteEvent(event?.id || 0);
-                handleDialogOpenClose(false);
+                handleEditOpenClose({ isOpen: false });
                 resetValues();
               }}
               className='text-destructive hover:bg-destructive border-destructive hover:text-white'>
@@ -250,7 +250,7 @@ export function CalendarDrawer({
               type='button'
               variant='ghost'
               onClick={() => {
-                handleDialogOpenClose(false);
+                handleEditOpenClose({ isOpen: false });
                 resetValues();
               }}>
               キャンセル

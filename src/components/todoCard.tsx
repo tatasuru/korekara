@@ -12,8 +12,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
 import { format } from 'date-fns';
-import { Edit, GripVertical, Trash } from 'lucide-react';
-import { Clock, Flag } from 'lucide-react';
+import { Clock, Edit, Flag, GripVertical, Trash } from 'lucide-react';
 
 interface Todo {
   id: string;

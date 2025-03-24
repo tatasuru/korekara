@@ -4,8 +4,21 @@ import React, { useEffect, useState } from 'react';
 
 import { CalendarDialog } from '@/components/calendarDialog';
 import { CalendarDrawer } from '@/components/calendarDrawer';
+import { Badge } from '@/components/shadcn-ui/badge';
 import { Button } from '@/components/shadcn-ui/button';
 import { Calendar } from '@/components/shadcn-ui/calendar';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/shadcn-ui/card';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/shadcn-ui/dialog';
+import { ScrollArea, ScrollBar } from '@/components/shadcn-ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
@@ -24,6 +37,7 @@ import {
   subWeeks
 } from 'date-fns';
 import { ja } from 'date-fns/locale';
+import { Clock, Edit, Flag, GripVertical, Plus, Trash } from 'lucide-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Event {
@@ -40,7 +54,8 @@ export default function Page() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
-  const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedEvent, setSelectedEvent] = useState<Event | undefined>(undefined);
@@ -216,7 +231,7 @@ export default function Page() {
    * FOR DIALOG
    ****************/
   // handle dialog open/close
-  const handleDialogOpenClose = (isOpen: boolean, day?: Date, event?: Event) => {
+  const handleEditOpenClose = ({ isOpen, day, event }: { isOpen: boolean; day?: Date; event?: Event }) => {
     if (isOpen) {
       if (!date || (day && format(day, 'yyyy-MM-dd') !== format(date, 'yyyy-MM-dd'))) {
         setDate(day);
@@ -224,15 +239,34 @@ export default function Page() {
 
       setSelectedDate(day);
 
-      if (event) {
-        setSelectedEvent(event);
-      }
+      setSelectedEvent(event);
+      setEditOpen(isOpen);
     } else {
+      setEditOpen(isOpen);
       setSelectedDate(undefined);
       setSelectedEvent(undefined);
     }
+  };
 
-    setOpen(isOpen);
+  const handleDialogOpenClose = ({ isOpen, day, event }: { isOpen: boolean; day?: Date; event?: Event }) => {
+    if (isOpen) {
+      if (!date || (day && format(day, 'yyyy-MM-dd') !== format(date, 'yyyy-MM-dd'))) {
+        setDate(day);
+      }
+      setSelectedDate(day);
+      console.log('event', event);
+
+      if (event) {
+        setSelectedEvent(event);
+        setDialogOpen(isOpen);
+      } else {
+        setEditOpen(isOpen);
+      }
+    } else {
+      setDialogOpen(isOpen);
+      setSelectedDate(undefined);
+      setSelectedEvent(undefined);
+    }
   };
 
   /****************
@@ -469,7 +503,13 @@ export default function Page() {
                             key={dateIndex}>
                             <div
                               className='grid h-full w-full cursor-pointer grid-rows-[auto_1fr] text-xs'
-                              onClick={() => handleDialogOpenClose(true, date)}>
+                              onClick={() =>
+                                handleDialogOpenClose({
+                                  isOpen: true,
+                                  day: date,
+                                  event: events.find((event) => format(date, 'yyyy-MM-dd') === event.start)
+                                })
+                              }>
                               <div className='flex items-center justify-center'>
                                 <span
                                   className={
@@ -493,7 +533,11 @@ export default function Page() {
                                       key={event.id}
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        handleDialogOpenClose(true, date, event);
+                                        handleEditOpenClose({
+                                          isOpen: true,
+                                          day: date,
+                                          event
+                                        });
                                       }}
                                       style={{
                                         width: 'calc(100% - 4px)',
@@ -532,7 +576,11 @@ export default function Page() {
                                       key={event.id}
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        handleDialogOpenClose(true, date, event);
+                                        handleEditOpenClose({
+                                          isOpen: true,
+                                          day: date,
+                                          event
+                                        });
                                       }}>
                                       {event.title}
                                     </div>
@@ -565,7 +613,11 @@ export default function Page() {
                                         key={`continuing-${event.id}`}
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          handleDialogOpenClose(true, date, event);
+                                          handleEditOpenClose({
+                                            isOpen: true,
+                                            day: date,
+                                            event
+                                          });
                                         }}>
                                         {event.title}
                                       </div>
@@ -637,7 +689,13 @@ export default function Page() {
                           ? 'ring-main rounded-md ring-1'
                           : ''
                       }`}
-                      onClick={() => handleDialogOpenClose(true, day)}>
+                      onClick={() =>
+                        handleDialogOpenClose({
+                          isOpen: true,
+                          day,
+                          event: events.find((event) => format(day, 'yyyy-MM-dd') === event.start)
+                        })
+                      }>
                       <div className='mb-2 text-center'>
                         <div className='text-muted-foreground text-xs'>{format(day, 'E', { locale: ja })}</div>
                         <div
@@ -666,7 +724,11 @@ export default function Page() {
                               }}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDialogOpenClose(true, day, event);
+                                handleEditOpenClose({
+                                  isOpen: true,
+                                  day,
+                                  event
+                                });
                               }}>
                               {event.title}
                             </div>
@@ -693,7 +755,11 @@ export default function Page() {
                               key={event.id}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDialogOpenClose(true, day, event);
+                                handleEditOpenClose({
+                                  isOpen: true,
+                                  day,
+                                  event
+                                });
                               }}>
                               {event.title}
                             </div>
@@ -720,7 +786,11 @@ export default function Page() {
                               key={`continuing-${event.id}`}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDialogOpenClose(true, day, event);
+                                handleEditOpenClose({
+                                  isOpen: true,
+                                  day,
+                                  event
+                                });
                               }}>
                               {event.title}
                             </div>
@@ -736,23 +806,72 @@ export default function Page() {
         </div>
       </div>
 
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className='p-4 sm:max-w-xl'>
+          <DialogTitle className='text-sm font-bold'>予定を確認</DialogTitle>
+          <DialogDescription className='hidden' />
+
+          <ScrollArea className='max-h-80'>
+            {events.map((event) => (
+              <Card key={event.id} className='gap-1 py-4'>
+                <CardHeader className='flex items-center justify-between'>
+                  <CardTitle>{event.title}</CardTitle>
+                  <div className='flex gap-1'>
+                    <Button type='button' size={'xs'} variant={'ghost'}>
+                      <Edit size={8} />
+                    </Button>
+                    <Button size={'xs'} variant={'ghost'} onClick={() => deleteEvent(event.id)}>
+                      <Trash size={8} className='text-destructive' />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardFooter>
+                  <CardDescription>
+                    <div className='flex items-center gap-2'>
+                      <Badge variant={event.all_day ? 'medium' : 'secondary'} className='rounded-full text-xs'>
+                        {event.all_day && '終日'}
+                      </Badge>
+                      {event.all_day ? (
+                        <p>{format(new Date(event.start), 'yyyy/MM/dd')}</p>
+                      ) : (
+                        <p>
+                          {format(new Date(event.start), 'yyyy/MM/dd HH:mm')} -{' '}
+                          {format(new Date(event.end), 'yyyy/MM/dd HH:mm')}
+                        </p>
+                      )}
+                    </div>
+                  </CardDescription>
+                </CardFooter>
+              </Card>
+            ))}
+          </ScrollArea>
+
+          <DialogFooter>
+            <Button variant={'main'} size={'sm'}>
+              <Plus size={8} />
+              予定を追加
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* edit modal */}
       {isDesktop ? (
         <CalendarDialog
-          open={open}
+          open={editOpen}
           selectedDate={selectedDate!}
           event={selectedEvent}
-          handleDialogOpenClose={handleDialogOpenClose}
+          handleEditOpenClose={handleEditOpenClose}
           createEvent={createEvent}
           updateEvent={updateEvent}
           deleteEvent={deleteEvent}
         />
       ) : (
         <CalendarDrawer
-          open={open}
+          open={editOpen}
           selectedDate={selectedDate!}
           event={selectedEvent}
-          handleDialogOpenClose={handleDialogOpenClose}
+          handleEditOpenClose={handleEditOpenClose}
           createEvent={createEvent}
           updateEvent={updateEvent}
           deleteEvent={deleteEvent}
