@@ -298,8 +298,9 @@ export default function Page() {
       .insert([
         {
           title: scheduleData.title,
-          start: scheduleData.start,
-          end: scheduleData.end,
+          // Convert date to ISO string
+          start: new Date(scheduleData.start).toISOString(),
+          end: new Date(scheduleData.end).toISOString(),
           all_day: scheduleData.all_day
         }
       ])
@@ -320,7 +321,7 @@ export default function Page() {
   ) => {
     const { data, error } = await supabase
       .from('calendar')
-      .update({ title, start, end, all_day })
+      .update({ title, start: new Date(start).toISOString(), end: new Date(end).toISOString(), all_day })
       .match({ id })
       .select();
 
@@ -459,8 +460,8 @@ export default function Page() {
 
                   // 1. この週全体に関わるイベントを収集（週をまたぐイベントも含む）
                   const eventsForWeek = events.filter((event) => {
-                    const eventStart = new Date(event.start);
-                    const eventEnd = new Date(event.end);
+                    const eventStart = new Date(event.start.split('T')[0]);
+                    const eventEnd = new Date(event.end.split('T')[0]);
 
                     // 週の範囲内に少なくとも1日含まれているイベント
                     return (
@@ -480,7 +481,9 @@ export default function Page() {
 
                         // 1. Find single-day events for this date
                         const singleDayEvents = events.filter(
-                          (event) => format(date, 'yyyy-MM-dd') === event.start && event.start === event.end
+                          (event) =>
+                            format(date, 'yyyy-MM-dd') === format(event.start, 'yyyy-MM-dd') &&
+                            format(event.start, 'yyy-MM-dd') === format(event.end, 'yyyy-MM-dd')
                         );
 
                         // 2. Find multi-day events that START on this specific date
@@ -664,8 +667,8 @@ export default function Page() {
 
                   // 週全体に関わるイベントを収集
                   const weekEvents = events.filter((event) => {
-                    const eventStart = new Date(event.start);
-                    const eventEnd = new Date(event.end);
+                    const eventStart = new Date(event.start.split('T')[0]);
+                    const eventEnd = new Date(event.end.split('T')[0]);
                     return (
                       (eventStart <= currentWeek[6] && eventEnd >= currentWeek[0]) ||
                       (eventStart >= currentWeek[0] && eventStart <= currentWeek[6]) ||
@@ -678,7 +681,9 @@ export default function Page() {
 
                   // 1. Find single-day events for this date
                   const singleDayEvents = events.filter(
-                    (event) => format(day, 'yyyy-MM-dd') === event.start && event.start === event.end
+                    (event) =>
+                      format(day, 'yyyy-MM-dd') === format(event.start, 'yyyy-MM-dd') &&
+                      format(event.start, 'yyy-MM-dd') === format(event.end, 'yyyy-MM-dd')
                   );
 
                   // 2. Find multi-day events that START on this specific date

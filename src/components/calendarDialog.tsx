@@ -16,13 +16,14 @@ import {
 import { Input } from '@/components/shadcn-ui/input';
 import { Label } from '@/components/shadcn-ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn-ui/popover';
+import { ScrollArea, ScrollBar } from '@/components/shadcn-ui/scroll-area';
 import { Separator } from '@/components/shadcn-ui/separator';
 import { Switch } from '@/components/shadcn-ui/switch';
 import { cn } from '@/lib/utils';
 
 import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
-import { CalendarIcon } from 'lucide-react';
+import { is, ja } from 'date-fns/locale';
+import { CalendarIcon, Timer } from 'lucide-react';
 
 interface Event {
   id: number;
@@ -130,36 +131,97 @@ export function CalendarDialog({
               )}
               onClick={() => toggleAccordion(1)}>
               <CalendarIcon />
-              {selectedStartDate ? format(selectedStartDate, 'PPP', { locale: ja }) : <span>開始日を選択</span>}
+              {selectedStartDate && isAllDay ? (
+                format(selectedStartDate, 'PPP', { locale: ja })
+              ) : (
+                <>
+                  {selectedStartDate ? (
+                    <>
+                      {format(selectedStartDate, 'PPP', { locale: ja })}
+                      <span className=''>{format(selectedStartDate, 'p', { locale: ja })}</span>
+                    </>
+                  ) : (
+                    <span>開始日を選択</span>
+                  )}
+                </>
+              )}
             </Button>
           </div>
           <div className='accordion hidden w-full transition-all' id='accordion-1'>
-            <Calendar
-              mode='single'
-              locale={ja}
-              defaultMonth={selectedStartDate}
-              selected={selectedStartDate}
-              onSelect={(newDate) => {
-                setSelectedStartDate(newDate);
-              }}
-              formatters={{
-                formatCaption: (jaDate) => {
-                  const date = new Date(jaDate);
-                  return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
-                }
-              }}
-              classNames={{
-                months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1 w-full',
-                month: 'space-y-4 w-full h-full flex flex-col',
-                table: 'w-full h-full space-y-1',
-                head_row: '',
-                head: 'text-muted-foreground',
-                head_cell: 'text-muted-foreground rounded-md w-6 font-normal text-[0.8rem]',
-                row: 'w-full mt-2',
-                cell: 'relative text-center text-sm focus-within:relative',
-                day_selected: 'bg-main text-white hover:bg-main/90 hover:text-white'
-              }}
-            />
+            <div className='grid grid-cols-[1fr_auto] items-center gap-2'>
+              <Calendar
+                mode='single'
+                locale={ja}
+                defaultMonth={selectedStartDate}
+                selected={selectedStartDate}
+                onSelect={(newDate) => {
+                  setSelectedStartDate(newDate);
+                }}
+                formatters={{
+                  formatCaption: (jaDate) => {
+                    const date = new Date(jaDate);
+                    return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
+                  }
+                }}
+                classNames={{
+                  months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1 w-full',
+                  month: 'space-y-4 w-full h-full flex flex-col',
+                  table: 'w-full h-full space-y-1',
+                  head_row: '',
+                  head: 'text-muted-foreground',
+                  head_cell: 'text-muted-foreground rounded-md w-6 font-normal text-[0.8rem]',
+                  row: 'w-full mt-2',
+                  cell: 'relative text-center text-sm focus-within:relative',
+                  day_selected: 'bg-main text-white hover:bg-main/90 hover:text-white'
+                }}
+              />
+              {!isAllDay && (
+                <div className='flex h-[250px] w-fit flex-col divide-y sm:flex-row sm:divide-x sm:divide-y-0'>
+                  <ScrollArea className='w-64 sm:w-auto'>
+                    <div className='flex p-2 sm:flex-col'>
+                      {Array.from({ length: 24 }, (_, i) => i)
+                        .reverse()
+                        .map((hour) => (
+                          <Button
+                            key={hour}
+                            size='icon'
+                            variant={selectedStartDate?.getHours() === hour ? 'main' : 'ghost'}
+                            className='aspect-square shrink-0 sm:w-full'
+                            onClick={() => {
+                              setSelectedStartDate((prev) => {
+                                if (!prev) return new Date();
+                                return new Date(prev.setHours(hour));
+                              });
+                            }}>
+                            {hour}
+                          </Button>
+                        ))}
+                    </div>
+                    <ScrollBar orientation='horizontal' className='sm:hidden' />
+                  </ScrollArea>
+                  <ScrollArea className='w-64 sm:w-auto'>
+                    <div className='flex p-2 sm:flex-col'>
+                      {Array.from({ length: 12 }, (_, i) => i * 5).map((minute) => (
+                        <Button
+                          key={minute}
+                          size='icon'
+                          variant={selectedStartDate?.getMinutes() === minute ? 'main' : 'ghost'}
+                          className='aspect-square shrink-0 sm:w-full'
+                          onClick={() => {
+                            setSelectedStartDate((prev) => {
+                              if (!prev) return new Date();
+                              return new Date(prev.setMinutes(minute));
+                            });
+                          }}>
+                          {minute.toString().padStart(2, '0')}
+                        </Button>
+                      ))}
+                    </div>
+                    <ScrollBar orientation='horizontal' className='sm:hidden' />
+                  </ScrollArea>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -174,36 +236,97 @@ export function CalendarDialog({
               )}
               onClick={() => toggleAccordion(2)}>
               <CalendarIcon />
-              {selectedEndDate ? format(selectedEndDate, 'PPP', { locale: ja }) : <span>終了日を選択</span>}
+              {selectedEndDate && isAllDay ? (
+                format(selectedEndDate, 'PPP', { locale: ja })
+              ) : (
+                <>
+                  {selectedEndDate ? (
+                    <>
+                      {format(selectedEndDate, 'PPP', { locale: ja })}
+                      <span className=''>{format(selectedEndDate, 'p', { locale: ja })}</span>
+                    </>
+                  ) : (
+                    <span>終了日を選択</span>
+                  )}
+                </>
+              )}
             </Button>
           </div>
           <div className='accordion hidden w-full transition-all' id='accordion-2'>
-            <Calendar
-              mode='single'
-              locale={ja}
-              defaultMonth={selectedEndDate}
-              selected={selectedEndDate}
-              onSelect={(newDate) => {
-                setSelectedEndDate(newDate);
-              }}
-              formatters={{
-                formatCaption: (jaDate) => {
-                  const date = new Date(jaDate);
-                  return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
-                }
-              }}
-              classNames={{
-                months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1 w-full',
-                month: 'space-y-4 w-full h-full flex flex-col',
-                table: 'w-full h-full space-y-1',
-                head_row: '',
-                head: 'text-muted-foreground',
-                head_cell: 'text-muted-foreground rounded-md w-6 font-normal text-[0.8rem]',
-                row: 'w-full mt-2',
-                cell: 'relative text-center text-sm focus-within:relative',
-                day_selected: 'bg-main text-white hover:bg-main/90 hover:text-white'
-              }}
-            />
+            <div className='grid grid-cols-[1fr_auto] items-center gap-2'>
+              <Calendar
+                mode='single'
+                locale={ja}
+                defaultMonth={selectedEndDate}
+                selected={selectedEndDate}
+                onSelect={(newDate) => {
+                  setSelectedEndDate(newDate);
+                }}
+                formatters={{
+                  formatCaption: (jaDate) => {
+                    const date = new Date(jaDate);
+                    return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
+                  }
+                }}
+                classNames={{
+                  months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1 w-full',
+                  month: 'space-y-4 w-full h-full flex flex-col',
+                  table: 'w-full h-full space-y-1',
+                  head_row: '',
+                  head: 'text-muted-foreground',
+                  head_cell: 'text-muted-foreground rounded-md w-6 font-normal text-[0.8rem]',
+                  row: 'w-full mt-2',
+                  cell: 'relative text-center text-sm focus-within:relative',
+                  day_selected: 'bg-main text-white hover:bg-main/90 hover:text-white'
+                }}
+              />
+              {!isAllDay && (
+                <div className='flex h-[250px] w-fit flex-col divide-y sm:flex-row sm:divide-x sm:divide-y-0'>
+                  <ScrollArea className='w-64 sm:w-auto'>
+                    <div className='flex p-2 sm:flex-col'>
+                      {Array.from({ length: 24 }, (_, i) => i)
+                        .reverse()
+                        .map((hour) => (
+                          <Button
+                            key={hour}
+                            size='icon'
+                            variant={selectedEndDate?.getHours() === hour ? 'main' : 'ghost'}
+                            className='aspect-square shrink-0 sm:w-full'
+                            onClick={() => {
+                              setSelectedEndDate((prev) => {
+                                if (!prev) return new Date();
+                                return new Date(prev.setHours(hour));
+                              });
+                            }}>
+                            {hour}
+                          </Button>
+                        ))}
+                    </div>
+                    <ScrollBar orientation='horizontal' className='sm:hidden' />
+                  </ScrollArea>
+                  <ScrollArea className='w-64 sm:w-auto'>
+                    <div className='flex p-2 sm:flex-col'>
+                      {Array.from({ length: 12 }, (_, i) => i * 5).map((minute) => (
+                        <Button
+                          key={minute}
+                          size='icon'
+                          variant={selectedEndDate?.getMinutes() === minute ? 'main' : 'ghost'}
+                          className='aspect-square shrink-0 sm:w-full'
+                          onClick={() => {
+                            setSelectedEndDate((prev) => {
+                              if (!prev) return new Date();
+                              return new Date(prev.setMinutes(minute));
+                            });
+                          }}>
+                          {minute.toString().padStart(2, '0')}
+                        </Button>
+                      ))}
+                    </div>
+                    <ScrollBar orientation='horizontal' className='sm:hidden' />
+                  </ScrollArea>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -218,18 +341,30 @@ export function CalendarDialog({
                   updateEvent(event.id, {
                     title: inputValue,
                     start: selectedStartDate
-                      ? format(selectedStartDate, 'yyyy-MM-dd')
+                      ? isAllDay
+                        ? format(selectedStartDate, 'yyyy-MM-dd')
+                        : format(selectedStartDate, 'yyyy-MM-dd HH:mm')
                       : format(selectedDate, 'yyyy-MM-dd'),
-                    end: selectedEndDate ? format(selectedEndDate, 'yyyy-MM-dd') : format(selectedDate, 'yyyy-MM-dd'),
+                    end: selectedEndDate
+                      ? isAllDay
+                        ? format(selectedEndDate, 'yyyy-MM-dd')
+                        : format(selectedEndDate, 'yyyy-MM-dd HH:mm')
+                      : format(selectedDate, 'yyyy-MM-dd'),
                     all_day: isAllDay
                   });
                 } else {
                   createEvent({
                     title: inputValue,
                     start: selectedStartDate
-                      ? format(selectedStartDate, 'yyyy-MM-dd')
+                      ? isAllDay
+                        ? format(selectedStartDate, 'yyyy-MM-dd')
+                        : format(selectedStartDate, 'yyyy-MM-dd HH:mm')
                       : format(selectedDate, 'yyyy-MM-dd'),
-                    end: selectedEndDate ? format(selectedEndDate, 'yyyy-MM-dd') : format(selectedDate, 'yyyy-MM-dd'),
+                    end: selectedEndDate
+                      ? isAllDay
+                        ? format(selectedEndDate, 'yyyy-MM-dd')
+                        : format(selectedEndDate, 'yyyy-MM-dd HH:mm')
+                      : format(selectedDate, 'yyyy-MM-dd'),
                     all_day: isAllDay
                   });
                 }
