@@ -179,23 +179,21 @@ export function CalendarDialog({
                 <div className='flex h-[250px] w-fit flex-col divide-y sm:flex-row sm:divide-x sm:divide-y-0'>
                   <ScrollArea className='w-64 sm:w-auto'>
                     <div className='flex p-2 sm:flex-col'>
-                      {Array.from({ length: 24 }, (_, i) => i)
-                        .reverse()
-                        .map((hour) => (
-                          <Button
-                            key={hour}
-                            size='icon'
-                            variant={selectedStartDate?.getHours() === hour ? 'main' : 'ghost'}
-                            className='aspect-square shrink-0 sm:w-full'
-                            onClick={() => {
-                              setSelectedStartDate((prev) => {
-                                if (!prev) return new Date();
-                                return new Date(prev.setHours(hour));
-                              });
-                            }}>
-                            {hour}
-                          </Button>
-                        ))}
+                      {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
+                        <Button
+                          key={hour}
+                          size='icon'
+                          variant={selectedStartDate?.getHours() === hour ? 'main' : 'ghost'}
+                          className='aspect-square shrink-0 sm:w-full'
+                          onClick={() => {
+                            setSelectedStartDate((prev) => {
+                              if (!prev) return new Date();
+                              return new Date(prev.setHours(hour));
+                            });
+                          }}>
+                          {hour}
+                        </Button>
+                      ))}
                     </div>
                     <ScrollBar orientation='horizontal' className='sm:hidden' />
                   </ScrollArea>
@@ -284,25 +282,23 @@ export function CalendarDialog({
                 <div className='flex h-[250px] w-fit flex-col divide-y sm:flex-row sm:divide-x sm:divide-y-0'>
                   <ScrollArea className='w-64 sm:w-auto'>
                     <div className='flex p-2 sm:flex-col'>
-                      {Array.from({ length: 24 }, (_, i) => i)
-                        .reverse()
-                        .map((hour) => (
-                          <Button
-                            key={hour}
-                            size='icon'
-                            variant={selectedEndDate?.getHours() === hour ? 'main' : 'ghost'}
-                            className='aspect-square shrink-0 sm:w-full'
-                            onClick={() => {
-                              setSelectedEndDate((prev) => {
-                                if (!prev) return new Date();
-                                return new Date(prev.setHours(hour));
-                              });
-                            }}>
-                            {hour}
-                          </Button>
-                        ))}
+                      {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
+                        <Button
+                          key={hour}
+                          size='icon'
+                          variant={selectedEndDate?.getHours() === hour ? 'main' : 'ghost'}
+                          className='aspect-square shrink-0 sm:w-full'
+                          onClick={() => {
+                            setSelectedEndDate((prev) => {
+                              if (!prev) return new Date();
+                              return new Date(prev.setHours(hour));
+                            });
+                          }}>
+                          {hour}
+                        </Button>
+                      ))}
                     </div>
-                    <ScrollBar orientation='horizontal' className='sm:hidden' />
+                    <ScrollBar orientation='horizontal' className='hidden' />
                   </ScrollArea>
                   <ScrollArea className='w-64 sm:w-auto'>
                     <div className='flex p-2 sm:flex-col'>
@@ -322,7 +318,7 @@ export function CalendarDialog({
                         </Button>
                       ))}
                     </div>
-                    <ScrollBar orientation='horizontal' className='sm:hidden' />
+                    <ScrollBar orientation='horizontal' className='hidden' />
                   </ScrollArea>
                 </div>
               )}
