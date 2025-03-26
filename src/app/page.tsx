@@ -770,7 +770,10 @@ export default function Page() {
 
                           return (
                             <div
-                              className='bg-main hover:bg-main/80 absolute left-0.5 w-full truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                              className={cn(
+                                'absolute left-0.5 z-10 flex w-full items-center justify-start gap-2 rounded-xs px-2 py-0.5 text-[8px] font-bold md:text-xs',
+                                event.all_day ? 'bg-main hover:bg-main/80 text-white' : 'hover:bg-muted'
+                              )}
                               key={event.id}
                               style={{
                                 width: 'calc(100% - 4px)',
@@ -785,7 +788,8 @@ export default function Page() {
                                   event
                                 });
                               }}>
-                              {event.title}
+                              {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
+                              <p className='truncate'>{event.title}</p>
                             </div>
                           );
                         })}
@@ -801,7 +805,12 @@ export default function Page() {
 
                           return (
                             <div
-                              className='bg-main hover:bg-main/80 absolute left-0.5 z-10 truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                              className={cn(
+                                'absolute left-0.5 z-10 flex w-full items-center justify-start gap-2 rounded-xs px-2 py-0.5 text-[8px] font-bold md:text-xs',
+                                event.all_day
+                                  ? 'bg-main hover:bg-main/80 text-white'
+                                  : 'hover:bg-muted outline-main outline -outline-offset-1 outline-dashed'
+                              )}
                               style={{
                                 width: `calc(${daysLeft * 100}% - 4px)`,
                                 maxWidth: `calc(${daysLeft * 100}% - 4px)`,
@@ -816,7 +825,8 @@ export default function Page() {
                                   event
                                 });
                               }}>
-                              {event.title}
+                              {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
+                              <p className='truncate'>{event.title}</p>
                             </div>
                           );
                         })}
@@ -832,7 +842,12 @@ export default function Page() {
 
                           return (
                             <div
-                              className='bg-main hover:bg-main/80 absolute left-0.5 z-10 truncate rounded-xs px-1 py-0.5 text-[10px] font-bold text-white md:text-xs'
+                              className={cn(
+                                'absolute left-0.5 z-10 flex w-full items-center justify-start gap-2 rounded-xs px-2 py-0.5 text-[8px] font-bold md:text-xs',
+                                event.all_day
+                                  ? 'bg-main hover:bg-main/80 text-white'
+                                  : 'hover:bg-muted outline-main outline -outline-offset-1 outline-dashed'
+                              )}
                               style={{
                                 width: `calc(${daysInThisWeek * 100}% - 4px)`,
                                 maxWidth: `calc(${daysInThisWeek * 100}% - 4px)`,
@@ -847,7 +862,8 @@ export default function Page() {
                                   event
                                 });
                               }}>
-                              {event.title}
+                              {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
+                              <p className='truncate'>{event.title}</p>
                             </div>
                           );
                         })}
