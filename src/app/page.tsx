@@ -526,7 +526,9 @@ export default function Page() {
                                 handleDialogOpenClose({
                                   isOpen: true,
                                   day: date,
-                                  event: events.find((event) => format(date, 'yyyy-MM-dd') === event.start)
+                                  event: events.find(
+                                    (event) => format(date, 'yyyy-MM-dd') === format(event.start, 'yyyy-MM-dd')
+                                  )
                                 })
                               }>
                               <div className='flex items-center justify-center'>
@@ -748,7 +750,7 @@ export default function Page() {
                         handleDialogOpenClose({
                           isOpen: true,
                           day,
-                          event: events.find((event) => format(day, 'yyyy-MM-dd') === event.start)
+                          event: events.find((event) => format(day, 'yyyy-MM-dd') === format(event.start, 'yyyy-MM-dd'))
                         })
                       }>
                       <div className='mb-2 text-center'>
