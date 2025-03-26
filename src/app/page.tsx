@@ -72,6 +72,12 @@ export default function Page() {
       const aStart = new Date(a.start).getTime();
       const bStart = new Date(b.start).getTime();
 
+      // eventのall_dayがtrueの場合、優先度を上げる
+      if (a.all_day !== b.all_day) {
+        console.log('a.all_day !== b.all_day');
+        return a.all_day ? -1 : 1;
+      }
+
       // 開始日が異なる場合は開始日の早い順
       if (aStart !== bStart) {
         return aStart - bStart;
@@ -480,11 +486,14 @@ export default function Page() {
                         const dateStr = format(date, 'yyyy-MM-dd');
 
                         // 1. Find single-day events for this date
-                        const singleDayEvents = events.filter(
-                          (event) =>
-                            format(date, 'yyyy-MM-dd') === format(event.start, 'yyyy-MM-dd') &&
-                            format(event.start, 'yyy-MM-dd') === format(event.end, 'yyyy-MM-dd')
-                        );
+                        const singleDayEvents = events
+                          .filter(
+                            (event) =>
+                              format(date, 'yyyy-MM-dd') === format(event.start, 'yyyy-MM-dd') &&
+                              format(event.start, 'yyyy-MM-dd') === format(event.end, 'yyyy-MM-dd')
+                          )
+                          // all_dayがtrueの場合は配列の最初に追加
+                          .sort((a, b) => (a.all_day ? -1 : 1));
 
                         // 2. Find multi-day events that START on this specific date
                         const multiDayEventsStartingHere = events.filter((event) => {
@@ -538,7 +547,10 @@ export default function Page() {
 
                                   return (
                                     <div
-                                      className='bg-main hover:bg-main/80 absolute left-0.5 w-full truncate rounded-xs px-1 py-0.5 text-[8px] font-bold text-white md:text-xs'
+                                      className={cn(
+                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-2 rounded-xs px-2 py-0.5 text-[8px] font-bold md:text-xs',
+                                        event.all_day ? 'bg-main hover:bg-main/80 text-white' : 'hover:bg-muted'
+                                      )}
                                       key={event.id}
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -553,7 +565,8 @@ export default function Page() {
                                         maxWidth: 'calc(100% - 4px)',
                                         top: `${topOffset}px`
                                       }}>
-                                      {event.title}
+                                      {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
+                                      <p className='truncate'>{event.title}</p>
                                     </div>
                                   );
                                 })}
@@ -575,7 +588,12 @@ export default function Page() {
 
                                   return (
                                     <div
-                                      className='bg-main hover:bg-main/80 absolute left-0.5 z-10 truncate rounded-xs px-1 py-0.5 text-[8px] font-bold text-white md:text-xs'
+                                      className={cn(
+                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-2 rounded-xs px-2 py-0.5 text-[8px] font-bold md:text-xs',
+                                        event.all_day
+                                          ? 'bg-main hover:bg-main/80 text-white'
+                                          : 'hover:bg-muted outline-main outline -outline-offset-1 outline-dashed'
+                                      )}
                                       style={{
                                         width: `calc(${daysVisibleInWeek * 100}% - 4px)`,
                                         maxWidth: `calc(${daysVisibleInWeek * 100}% - 4px)`,
@@ -590,7 +608,8 @@ export default function Page() {
                                           event
                                         });
                                       }}>
-                                      {event.title}
+                                      {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
+                                      <p className='truncate'>{event.title}</p>
                                     </div>
                                   );
                                 })}
@@ -611,7 +630,12 @@ export default function Page() {
 
                                     return (
                                       <div
-                                        className='bg-main hover:bg-main/80 absolute left-0.5 z-10 truncate rounded-xs px-1 py-0.5 text-[8px] font-bold text-white md:text-xs'
+                                        className={cn(
+                                          'absolute left-0.5 z-10 flex w-full items-center justify-start gap-2 rounded-xs px-2 py-0.5 text-[8px] font-bold md:text-xs',
+                                          event.all_day
+                                            ? 'bg-main hover:bg-main/80 text-white'
+                                            : 'hover:bg-muted outline-main outline -outline-offset-1 outline-dashed'
+                                        )}
                                         style={{
                                           width: `calc(${daysVisibleInWeek * 100}% - 4px)`,
                                           maxWidth: `calc(${daysVisibleInWeek * 100}% - 4px)`,
@@ -626,7 +650,10 @@ export default function Page() {
                                             event
                                           });
                                         }}>
-                                        {event.title}
+                                        {!event.all_day && (
+                                          <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />
+                                        )}
+                                        <p className='truncate'>{event.title}</p>
                                       </div>
                                     );
                                   })}
@@ -848,6 +875,7 @@ export default function Page() {
         </div>
       </div>
 
+      {/* schedule list modal */}
       {isDesktop ? (
         <Dialog open={dialogOpen} onOpenChange={() => handleDialogOpenClose({ isOpen: false })}>
           <DialogContent className='p-4 sm:max-w-xl'>
