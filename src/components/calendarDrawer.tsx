@@ -172,8 +172,8 @@ export function CalendarDrawer({
                     }}
                   />
                   {!isAllDay && (
-                    <div className='flex h-fit w-full flex-col divide-y sm:flex-row sm:divide-x sm:divide-y-0'>
-                      <ScrollArea className='w-[calc(100vw-32px)]'>
+                    <div className='flex h-fit w-full flex-col items-center divide-y sm:flex-row sm:divide-x sm:divide-y-0'>
+                      <ScrollArea className='w-[calc(100vw-64px)]'>
                         <div className='flex p-2 sm:flex-col'>
                           {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
                             <Button
@@ -193,7 +193,7 @@ export function CalendarDrawer({
                         </div>
                         <ScrollBar orientation='horizontal' className='sm:hidden' />
                       </ScrollArea>
-                      <ScrollArea className='w-[calc(100vw-32px)]'>
+                      <ScrollArea className='w-[calc(100vw-64px)]'>
                         <div className='flex p-2 sm:flex-col'>
                           {Array.from({ length: 12 }, (_, i) => i * 5).map((minute) => (
                             <Button
