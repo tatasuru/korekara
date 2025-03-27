@@ -492,20 +492,27 @@ export default function Todos() {
               <div className='flex flex-col items-center justify-between'>
                 <div className='flex w-full items-center justify-between'>
                   <Label>期限</Label>
-                  <Button
-                    variant={'outline'}
-                    className={cn(
-                      'w-[200px] justify-start text-left font-normal',
-                      selectedTodo?.due_date && 'text-muted-foreground'
-                    )}
-                    onClick={() => toggleAccordion(1)}>
-                    <CalendarIcon />
-                    {selectedTodo?.due_date ? (
-                      format(new Date(selectedTodo.due_date), 'PPP', { locale: ja })
-                    ) : (
-                      <span>期限を決める</span>
-                    )}
-                  </Button>
+                  <div className='flex items-center gap-2'>
+                    <Button
+                      variant={'outline'}
+                      className={cn(
+                        'w-[180px] justify-start text-left font-normal',
+                        selectedTodo?.due_date && 'text-muted-foreground'
+                      )}
+                      onClick={() => toggleAccordion(1)}>
+                      <CalendarIcon />
+                      {selectedTodo?.due_date ? (
+                        format(new Date(selectedTodo.due_date), 'PPP', { locale: ja })
+                      ) : (
+                        <span>期限を決める</span>
+                      )}
+                    </Button>
+                    <Button
+                      variant={'outline'}
+                      onClick={() => selectedTodo && setSelectedTodo({ ...selectedTodo, due_date: undefined })}>
+                      <RotateCcw size={16} />
+                    </Button>
+                  </div>
                 </div>
                 <div className='accordion hidden w-full transition-all' id='accordion-1'>
                   <Calendar
@@ -538,45 +545,52 @@ export default function Todos() {
 
               <div className='flex justify-between gap-2'>
                 <Label>優先度</Label>
-                <Select
-                  onValueChange={(value) =>
-                    selectedTodo &&
-                    setSelectedTodo({
-                      ...selectedTodo,
-                      priority: value as 'low' | 'medium' | 'high'
-                    })
-                  }>
-                  <SelectTrigger className='w-[200px] cursor-pointer'>
-                    <div className='flex flex-1'>
-                      {selectedTodo?.priority ? (
-                        <Badge className='rounded-full' variant={selectedTodo.priority}>
-                          {selectedTodo.priority.toUpperCase()}
-                        </Badge>
-                      ) : (
-                        <span className='text-muted-foreground'>優先度を選択</span>
-                      )}
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent className='w-full'>
-                    <SelectGroup>
-                      <SelectItem value='high'>
-                        <Badge className='rounded-full' variant={'high'}>
-                          HIGH
-                        </Badge>
-                      </SelectItem>
-                      <SelectItem value='medium'>
-                        <Badge className='rounded-full' variant={'medium'}>
-                          MEDIUM
-                        </Badge>
-                      </SelectItem>
-                      <SelectItem value='low'>
-                        <Badge className='rounded-full' variant={'low'}>
-                          LOW
-                        </Badge>
-                      </SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                <div className='flex items-center gap-2'>
+                  <Select
+                    onValueChange={(value) =>
+                      selectedTodo &&
+                      setSelectedTodo({
+                        ...selectedTodo,
+                        priority: value as 'low' | 'medium' | 'high'
+                      })
+                    }>
+                    <SelectTrigger className='w-[180px] cursor-pointer'>
+                      <div className='flex flex-1'>
+                        {selectedTodo?.priority ? (
+                          <Badge className='rounded-full' variant={selectedTodo.priority}>
+                            {selectedTodo.priority.toUpperCase()}
+                          </Badge>
+                        ) : (
+                          <span className='text-muted-foreground'>優先度を選択</span>
+                        )}
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className='w-full'>
+                      <SelectGroup>
+                        <SelectItem value='high'>
+                          <Badge className='rounded-full' variant={'high'}>
+                            HIGH
+                          </Badge>
+                        </SelectItem>
+                        <SelectItem value='medium'>
+                          <Badge className='rounded-full' variant={'medium'}>
+                            MEDIUM
+                          </Badge>
+                        </SelectItem>
+                        <SelectItem value='low'>
+                          <Badge className='rounded-full' variant={'low'}>
+                            LOW
+                          </Badge>
+                        </SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant={'outline'}
+                    onClick={() => selectedTodo && setSelectedTodo({ ...selectedTodo, priority: 'low' })}>
+                    <RotateCcw size={16} />
+                  </Button>
+                </div>
               </div>
             </div>
 
