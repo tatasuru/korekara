@@ -550,7 +550,7 @@ export default function Page() {
                                   return (
                                     <div
                                       className={cn(
-                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-2 rounded-xs px-2 py-0.5 text-[8px] font-bold md:text-xs',
+                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-2 py-0.5 text-[8px] font-bold md:gap-2 md:text-xs',
                                         event.all_day ? 'bg-main hover:bg-main/80 text-white' : 'hover:bg-muted'
                                       )}
                                       key={event.id}
@@ -591,7 +591,7 @@ export default function Page() {
                                   return (
                                     <div
                                       className={cn(
-                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-2 rounded-xs px-2 py-0.5 text-[8px] font-bold md:text-xs',
+                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-2 py-0.5 text-[8px] font-bold md:gap-2 md:text-xs',
                                         event.all_day
                                           ? 'bg-main hover:bg-main/80 text-white'
                                           : 'hover:bg-muted outline-main outline -outline-offset-1 outline-dashed'
@@ -633,7 +633,7 @@ export default function Page() {
                                     return (
                                       <div
                                         className={cn(
-                                          'absolute left-0.5 z-10 flex w-full items-center justify-start gap-2 rounded-xs px-2 py-0.5 text-[8px] font-bold md:text-xs',
+                                          'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-2 py-0.5 text-[8px] font-bold md:gap-2 md:text-xs',
                                           event.all_day
                                             ? 'bg-main hover:bg-main/80 text-white'
                                             : 'hover:bg-muted outline-main outline -outline-offset-1 outline-dashed'
