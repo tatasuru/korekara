@@ -63,8 +63,7 @@ export default function Todos() {
   };
 
   async function fetchTodos() {
-    const { data, error } = await supabase.from('todos').select('*').order('order', { ascending: false });
-
+    const { data, error } = await supabase.from('todos').select('*').order('order', { ascending: true });
     if (error) {
       console.error(error);
     } else {
@@ -87,7 +86,7 @@ export default function Todos() {
     if (error) {
       console.error(error);
     } else {
-      setTodos([data![0], ...todos]);
+      setTodos([...todos, data![0]]);
       setInputValue('');
     }
   }
