@@ -74,7 +74,6 @@ export default function Page() {
 
       // eventのall_dayがtrueの場合、優先度を上げる
       if (a.all_day !== b.all_day) {
-        console.log('a.all_day !== b.all_day');
         return a.all_day ? -1 : 1;
       }
 
@@ -568,7 +567,12 @@ export default function Page() {
                                         top: `${topOffset}px`
                                       }}>
                                       {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
-                                      <p className='truncate'>{event.title}</p>
+                                      <p className='truncate'>
+                                        {!event.all_day && (
+                                          <span className='mr-1'>{format(event.start, 'HH:mm')}~</span>
+                                        )}
+                                        {event.title}
+                                      </p>
                                     </div>
                                   );
                                 })}
@@ -611,7 +615,12 @@ export default function Page() {
                                         });
                                       }}>
                                       {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
-                                      <p className='truncate'>{event.title}</p>
+                                      <p className='truncate'>
+                                        {!event.all_day && (
+                                          <span className='mr-1'>{format(event.start, 'HH:mm')}~</span>
+                                        )}
+                                        {event.title}
+                                      </p>
                                     </div>
                                   );
                                 })}
@@ -655,7 +664,12 @@ export default function Page() {
                                         {!event.all_day && (
                                           <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />
                                         )}
-                                        <p className='truncate'>{event.title}</p>
+                                        <p className='truncate'>
+                                          {!event.all_day && (
+                                            <span className='mr-1'>{format(event.start, 'HH:mm')}~</span>
+                                          )}
+                                          {event.title}
+                                        </p>
                                       </div>
                                     );
                                   })}
@@ -791,7 +805,10 @@ export default function Page() {
                                 });
                               }}>
                               {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
-                              <p className='truncate'>{event.title}</p>
+                              <p className='truncate'>
+                                {!event.all_day && <span className='mr-1'>{format(event.start, 'HH:mm')}~</span>}
+                                {event.title}
+                              </p>
                             </div>
                           );
                         })}
@@ -828,7 +845,10 @@ export default function Page() {
                                 });
                               }}>
                               {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
-                              <p className='truncate'>{event.title}</p>
+                              <p className='truncate'>
+                                {!event.all_day && <span className='mr-1'>{format(event.start, 'HH:mm')}~</span>}
+                                {event.title}
+                              </p>
                             </div>
                           );
                         })}
@@ -865,7 +885,10 @@ export default function Page() {
                                 });
                               }}>
                               {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
-                              <p className='truncate'>{event.title}</p>
+                              <p className='truncate'>
+                                {!event.all_day && <span className='mr-1'>{format(event.start, 'HH:mm')}~</span>}
+                                {event.title}
+                              </p>
                             </div>
                           );
                         })}
