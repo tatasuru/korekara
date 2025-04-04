@@ -681,7 +681,7 @@ export default function Page() {
                                 {/* more than 3 schedule */}
                                 {eventsForDate.length > 3 && (
                                   <div
-                                    className='absolute left-0.5 z-10 truncate rounded-xs bg-white px-1 py-0.5 text-[8px] font-bold md:text-xs'
+                                    className='absolute left-0.5 z-10 truncate rounded-xs bg-white px-1 py-0.5 text-left text-[8px] font-bold md:text-xs'
                                     style={{
                                       width: 'calc(100% - 4px)',
                                       maxWidth: 'calc(100% - 4px)',
