@@ -60,9 +60,30 @@ export function CalendarDialog({
     if (open) {
       // Initialize with event data or defaults when modal opens
       setInputValue(event?.title ?? '');
-      setSelectedStartDate(event?.start ? new Date(event.start) : selectedDate);
-      setSelectedEndDate(event?.end ? new Date(event.end) : selectedDate);
-      setIsAllDay(event?.all_day ?? true);
+
+      if (event) {
+        // イベントがある場合は、そのイベントの日時をそのまま使用
+        const startDate = new Date(event.start);
+        const endDate = new Date(event.end);
+
+        // 終日イベントの場合は日付のみを使用
+        if (event.all_day) {
+          setSelectedStartDate(startDate);
+          setSelectedEndDate(endDate);
+        } else {
+          // タイムゾーンオフセットを考慮して調整
+          const jstStart = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60 * 1000);
+          const jstEnd = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60 * 1000);
+          setSelectedStartDate(jstStart);
+          setSelectedEndDate(jstEnd);
+        }
+        setIsAllDay(event.all_day);
+      } else {
+        // 新規作成の場合は、選択された日付を使用
+        setSelectedStartDate(selectedDate);
+        setSelectedEndDate(selectedDate);
+        setIsAllDay(true);
+      }
     }
   }, [open, selectedDate, event]);
 
@@ -339,12 +360,12 @@ export function CalendarDialog({
                     start: selectedStartDate
                       ? isAllDay
                         ? format(selectedStartDate, 'yyyy-MM-dd')
-                        : format(selectedStartDate, 'yyyy-MM-dd HH:mm')
+                        : selectedStartDate.toLocaleString('sv', { timeZone: 'Asia/Tokyo' }).replace(' ', 'T')
                       : format(selectedDate, 'yyyy-MM-dd'),
                     end: selectedEndDate
                       ? isAllDay
                         ? format(selectedEndDate, 'yyyy-MM-dd')
-                        : format(selectedEndDate, 'yyyy-MM-dd HH:mm')
+                        : selectedEndDate.toLocaleString('sv', { timeZone: 'Asia/Tokyo' }).replace(' ', 'T')
                       : format(selectedDate, 'yyyy-MM-dd'),
                     all_day: isAllDay
                   });
@@ -354,12 +375,12 @@ export function CalendarDialog({
                     start: selectedStartDate
                       ? isAllDay
                         ? format(selectedStartDate, 'yyyy-MM-dd')
-                        : format(selectedStartDate, 'yyyy-MM-dd HH:mm')
+                        : selectedStartDate.toLocaleString('sv', { timeZone: 'Asia/Tokyo' }).replace(' ', 'T')
                       : format(selectedDate, 'yyyy-MM-dd'),
                     end: selectedEndDate
                       ? isAllDay
                         ? format(selectedEndDate, 'yyyy-MM-dd')
-                        : format(selectedEndDate, 'yyyy-MM-dd HH:mm')
+                        : selectedEndDate.toLocaleString('sv', { timeZone: 'Asia/Tokyo' }).replace(' ', 'T')
                       : format(selectedDate, 'yyyy-MM-dd'),
                     all_day: isAllDay
                   });
