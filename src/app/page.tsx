@@ -460,6 +460,7 @@ export default function Page() {
               components={{
                 Row: (props) => {
                   // Get start and end of current week
+                  const dates = props.dates.map((date) => new Date(date));
                   const weekStart = props.dates[0];
                   const weekEnd = props.dates[props.dates.length - 1];
 
@@ -483,6 +484,18 @@ export default function Page() {
                     <tr className='gird relative mt-2 w-full grid-cols-7 border-b'>
                       {props.dates.map((date, dateIndex) => {
                         const dateStr = format(date, 'yyyy-MM-dd');
+                        const today = props.dates[dateIndex];
+
+                        // calculate event per date.
+                        const eventsForDate = events.filter((event) => {
+                          const eventStart = new Date(event.start.split('T')[0]);
+                          const eventEnd = new Date(event.end.split('T')[0]);
+
+                          return (
+                            format(eventStart, 'yyyy-MM-dd').includes(format(today, 'yyyy-MM-dd')) ||
+                            format(eventEnd, 'yyyy-MM-dd').includes(format(today, 'yyyy-MM-dd'))
+                          );
+                        });
 
                         // 1. Find single-day events for this date
                         const singleDayEvents = events
@@ -541,11 +554,7 @@ export default function Page() {
                                 </span>
                               </div>
                               <div className='min-h-[30px] overflow-hidden'>
-                                {singleDayEvents.map((event) => {
-                                  // 週全体で計算された位置を使用
-                                  const position = positions[event.id] !== undefined ? positions[event.id] : 0;
-                                  const topOffset = isDesktop ? 30 + position * 22 : 30 + position * 16;
-
+                                {singleDayEvents.slice(0, 3).map((event, index) => {
                                   return (
                                     <div
                                       className={cn(
@@ -564,7 +573,7 @@ export default function Page() {
                                       style={{
                                         width: 'calc(100% - 4px)',
                                         maxWidth: 'calc(100% - 4px)',
-                                        top: `${topOffset}px`
+                                        top: `${isDesktop ? 30 + index * 22 : 30 + index * 16}px`
                                       }}>
                                       {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
                                       <p className='truncate'>
@@ -577,66 +586,15 @@ export default function Page() {
                                   );
                                 })}
 
-                                {multiDayEventsStartingHere.map((event) => {
-                                  const eventStart = new Date(event.start);
-                                  const eventEnd = new Date(event.end);
-
-                                  // 週全体で計算された位置を使用
-                                  const position = positions[event.id] !== undefined ? positions[event.id] : 0;
-                                  const topOffset = isDesktop ? 30 + position * 22 : 30 + position * 16;
-
-                                  // Calculate days visible in this week (may continue to next week)
-                                  const daysVisibleInWeek = Math.min(
-                                    differenceInDays(weekEnd, eventStart) + 2,
-                                    differenceInDays(eventEnd, eventStart) + 1,
-                                    7 - dateIndex // Don't go beyond current week
-                                  );
-
-                                  return (
-                                    <div
-                                      className={cn(
-                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-2 py-0.5 text-[8px] font-bold md:gap-2 md:text-xs',
-                                        event.all_day
-                                          ? 'bg-main hover:bg-main/80 text-white'
-                                          : 'hover:bg-muted outline-main outline -outline-offset-1 outline-dashed'
-                                      )}
-                                      style={{
-                                        width: `calc(${daysVisibleInWeek * 100}% - 4px)`,
-                                        maxWidth: `calc(${daysVisibleInWeek * 100}% - 4px)`,
-                                        top: `${topOffset}px`
-                                      }}
-                                      key={event.id}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleEditOpenClose({
-                                          isOpen: true,
-                                          day: date,
-                                          event
-                                        });
-                                      }}>
-                                      {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
-                                      <p className='truncate'>
-                                        {!event.all_day && (
-                                          <span className='mr-1'>{format(event.start, 'HH:mm')}~</span>
-                                        )}
-                                        {event.title}
-                                      </p>
-                                    </div>
-                                  );
-                                })}
-
-                                {dateIndex === 0 &&
-                                  continuingEvents.map((event) => {
+                                {multiDayEventsStartingHere
+                                  .slice(0, Math.max(0, 3 - singleDayEvents.length))
+                                  .map((event, index) => {
+                                    const eventStart = new Date(event.start);
                                     const eventEnd = new Date(event.end);
-
-                                    // 週全体で計算された位置を使用
-                                    const position = positions[event.id] !== undefined ? positions[event.id] : 0;
-                                    const topOffset = isDesktop ? 30 + position * 22 : 30 + position * 16;
-
-                                    // Calculate days visible in this week
                                     const daysVisibleInWeek = Math.min(
-                                      differenceInDays(eventEnd, weekStart) + 1,
-                                      7 // Maximum days in a week
+                                      differenceInDays(weekEnd, eventStart) + 2,
+                                      differenceInDays(eventEnd, eventStart) + 1,
+                                      7 - dateIndex
                                     );
 
                                     return (
@@ -650,9 +608,9 @@ export default function Page() {
                                         style={{
                                           width: `calc(${daysVisibleInWeek * 100}% - 4px)`,
                                           maxWidth: `calc(${daysVisibleInWeek * 100}% - 4px)`,
-                                          top: `${topOffset}px`
+                                          top: `${isDesktop ? 30 + (singleDayEvents.length + index) * 22 : 30 + (singleDayEvents.length + index) * 16}px`
                                         }}
-                                        key={`continuing-${event.id}`}
+                                        key={event.id}
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           handleEditOpenClose({
@@ -674,24 +632,64 @@ export default function Page() {
                                     );
                                   })}
 
+                                {dateIndex === 0 &&
+                                  continuingEvents
+                                    .slice(
+                                      0,
+                                      Math.max(0, 3 - singleDayEvents.length - multiDayEventsStartingHere.length)
+                                    )
+                                    .map((event, index) => {
+                                      const eventEnd = new Date(event.end);
+                                      const weekStart = currentWeek[0];
+                                      const daysInThisWeek = Math.min(differenceInDays(eventEnd, weekStart) + 1, 7);
+
+                                      return (
+                                        <div
+                                          className={cn(
+                                            'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-2 py-0.5 text-[8px] font-bold md:gap-2 md:text-xs',
+                                            event.all_day
+                                              ? 'bg-main hover:bg-main/80 text-white'
+                                              : 'hover:bg-muted outline-main outline -outline-offset-1 outline-dashed'
+                                          )}
+                                          style={{
+                                            width: `calc(${daysInThisWeek * 100}% - 4px)`,
+                                            maxWidth: `calc(${daysInThisWeek * 100}% - 4px)`,
+                                            top: `${isDesktop ? 30 + (singleDayEvents.length + multiDayEventsStartingHere.length + index) * 22 : 30 + (singleDayEvents.length + multiDayEventsStartingHere.length + index) * 16}px`
+                                          }}
+                                          key={`continuing-${event.id}`}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEditOpenClose({
+                                              isOpen: true,
+                                              day: date,
+                                              event
+                                            });
+                                          }}>
+                                          {!event.all_day && (
+                                            <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />
+                                          )}
+                                          <p className='truncate'>
+                                            {!event.all_day && (
+                                              <span className='mr-1'>{format(event.start, 'HH:mm')}~</span>
+                                            )}
+                                            {event.title}
+                                          </p>
+                                        </div>
+                                      );
+                                    })}
+
                                 {/* more than 3 schedule */}
-                                {/* {singleDayEvents.length + multiDayEventsStartingHere.length + continuingEvents.length >
-                                  2 && (
+                                {eventsForDate.length > 3 && (
                                   <div
-                                    className='absolute left-0.5 z-10 truncate rounded-xs px-1 py-0.5 text-[8px] font-bold md:text-xs'
+                                    className='absolute left-0.5 z-10 truncate rounded-xs bg-white px-1 py-0.5 text-[8px] font-bold md:text-xs'
                                     style={{
                                       width: 'calc(100% - 4px)',
                                       maxWidth: 'calc(100% - 4px)',
-                                      top: isDesktop ? 28 + 2 * 22 : 30 + 2 * 16
+                                      top: `${isDesktop ? 30 + 3 * 22 : 30 + 3 * 16}px`
                                     }}>
-                                    他
-                                    {singleDayEvents.length +
-                                      multiDayEventsStartingHere.length +
-                                      continuingEvents.length -
-                                      2}
-                                    件...
+                                    他{eventsForDate.length - 3}件...
                                   </div>
-                                )} */}
+                                )}
                               </div>
                             </div>
                           </td>
@@ -779,7 +777,7 @@ export default function Page() {
                         </div>
                       </div>
                       <div className='relative min-h-[100px] flex-1'>
-                        {singleDayEvents.map((event) => {
+                        {singleDayEvents.slice(0, 2).map((event) => {
                           // 計算された位置を使用
                           const position = positions[event.id] !== undefined ? positions[event.id] : 0;
                           const topOffset = position * 22 + 2;
@@ -813,7 +811,7 @@ export default function Page() {
                           );
                         })}
 
-                        {multiDayEventsStartingHere.map((event) => {
+                        {multiDayEventsStartingHere.slice(0, Math.max(0, 2 - singleDayEvents.length)).map((event) => {
                           const eventStart = new Date(event.start);
                           const eventEnd = new Date(event.end);
                           const daysLeft = Math.min(differenceInDays(eventEnd, eventStart) + 1, 7 - dateIndex);
@@ -853,48 +851,50 @@ export default function Page() {
                           );
                         })}
 
-                        {continuingEvents.map((event) => {
-                          const eventEnd = new Date(event.end);
-                          const weekStart = day;
-                          const daysInThisWeek = Math.min(differenceInDays(eventEnd, weekStart) + 1, 7);
+                        {continuingEvents
+                          .slice(0, Math.max(0, 2 - singleDayEvents.length - multiDayEventsStartingHere.length))
+                          .map((event) => {
+                            const eventEnd = new Date(event.end);
+                            const weekStart = day;
+                            const daysInThisWeek = Math.min(differenceInDays(eventEnd, weekStart) + 1, 7);
 
-                          // 計算された位置を使用
-                          const position = positions[event.id] !== undefined ? positions[event.id] : 0;
-                          const topOffset = position * 22 + 2;
+                            // 計算された位置を使用
+                            const position = positions[event.id] !== undefined ? positions[event.id] : 0;
+                            const topOffset = position * 22 + 2;
 
-                          return (
-                            <div
-                              className={cn(
-                                'absolute left-0.5 z-10 flex w-full items-center justify-start gap-2 rounded-xs px-2 py-0.5 text-[8px] font-bold md:text-xs',
-                                event.all_day
-                                  ? 'bg-main hover:bg-main/80 text-white'
-                                  : 'hover:bg-muted outline-main outline -outline-offset-1 outline-dashed'
-                              )}
-                              style={{
-                                width: `calc(${daysInThisWeek * 100}% - 4px)`,
-                                maxWidth: `calc(${daysInThisWeek * 100}% - 4px)`,
-                                top: `${topOffset}px`
-                              }}
-                              key={`continuing-${event.id}`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEditOpenClose({
-                                  isOpen: true,
-                                  day,
-                                  event
-                                });
-                              }}>
-                              {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
-                              <p className='truncate'>
-                                {!event.all_day && <span className='mr-1'>{format(event.start, 'HH:mm')}~</span>}
-                                {event.title}
-                              </p>
-                            </div>
-                          );
-                        })}
+                            return (
+                              <div
+                                className={cn(
+                                  'absolute left-0.5 z-10 flex w-full items-center justify-start gap-2 rounded-xs px-2 py-0.5 text-[8px] font-bold md:text-xs',
+                                  event.all_day
+                                    ? 'bg-main hover:bg-main/80 text-white'
+                                    : 'hover:bg-muted outline-main outline -outline-offset-1 outline-dashed'
+                                )}
+                                style={{
+                                  width: `calc(${daysInThisWeek * 100}% - 4px)`,
+                                  maxWidth: `calc(${daysInThisWeek * 100}% - 4px)`,
+                                  top: `${topOffset}px`
+                                }}
+                                key={`continuing-${event.id}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditOpenClose({
+                                    isOpen: true,
+                                    day,
+                                    event
+                                  });
+                                }}>
+                                {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
+                                <p className='truncate'>
+                                  {!event.all_day && <span className='mr-1'>{format(event.start, 'HH:mm')}~</span>}
+                                  {event.title}
+                                </p>
+                              </div>
+                            );
+                          })}
 
                         {/* more than 3 schedule */}
-                        {/* {singleDayEvents.length + multiDayEventsStartingHere.length + continuingEvents.length > 2 && (
+                        {singleDayEvents.length + multiDayEventsStartingHere.length + continuingEvents.length > 2 && (
                           <div
                             className='absolute left-0.5 z-10 truncate rounded-xs px-1 py-0.5 text-[8px] font-bold md:text-xs'
                             style={{
@@ -905,7 +905,7 @@ export default function Page() {
                             他{singleDayEvents.length + multiDayEventsStartingHere.length + continuingEvents.length - 2}
                             件...
                           </div>
-                        )} */}
+                        )}
                       </div>
                     </div>
                   );
