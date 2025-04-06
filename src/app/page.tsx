@@ -17,7 +17,6 @@ import {
   DrawerTitle
 } from '@/components/shadcn-ui/drawer';
 import { ScrollArea } from '@/components/shadcn-ui/scroll-area';
-import { Tabs, TabsList, TabsTrigger } from '@/components/shadcn-ui/tabs';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/utils/supabase/client';
@@ -611,12 +610,12 @@ export default function Page() {
                                         'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-2 py-0.5 text-[8px] font-bold md:gap-2 md:text-xs',
                                         event.all_day
                                           ? 'bg-main hover:bg-main/80 text-white'
-                                          : 'hover:bg-muted outline-main outline -outline-offset-1 outline-dashed'
+                                          : 'bg-main/20 hover:bg-main/30 text-main'
                                       )}
                                       style={{
                                         width: `calc(${daysInThisWeek * 100}% - 4px)`,
                                         maxWidth: `calc(${daysInThisWeek * 100}% - 4px)`,
-                                        top: `${isDesktop ? 30 + position * 24 : 30 + position * 18}px`
+                                        top: `${isDesktop ? 30 + position * 24 : 20 + position * 14}px`
                                       }}
                                       key={`continuing-${event.id}`}
                                       onClick={(e) => {
@@ -628,12 +627,7 @@ export default function Page() {
                                         });
                                       }}>
                                       {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
-                                      <p className='truncate'>
-                                        {!event.all_day && (
-                                          <span className='mr-1'>{format(event.start, 'HH:mm')}~</span>
-                                        )}
-                                        {event.title}
-                                      </p>
+                                      <p className='truncate'>{event.title}</p>
                                     </div>
                                   );
                                 })}
@@ -655,12 +649,12 @@ export default function Page() {
                                       'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-2 py-0.5 text-[8px] font-bold md:gap-2 md:text-xs',
                                       event.all_day
                                         ? 'bg-main hover:bg-main/80 text-white'
-                                        : 'hover:bg-muted outline-main outline -outline-offset-1 outline-dashed'
+                                        : 'bg-main/20 hover:bg-main/30 text-main'
                                     )}
                                     style={{
                                       width: `calc(${daysVisibleInWeek * 100}% - 4px)`,
                                       maxWidth: `calc(${daysVisibleInWeek * 100}% - 4px)`,
-                                      top: `${isDesktop ? 30 + position * 24 : 30 + position * 18}px`
+                                      top: `${isDesktop ? 30 + position * 24 : 30 + position * 16}px`
                                     }}
                                     key={event.id}
                                     onClick={(e) => {
@@ -672,10 +666,7 @@ export default function Page() {
                                       });
                                     }}>
                                     {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
-                                    <p className='truncate'>
-                                      {!event.all_day && <span className='mr-1'>{format(event.start, 'HH:mm')}~</span>}
-                                      {event.title}
-                                    </p>
+                                    <p className='truncate'>{event.title}</p>
                                   </div>
                                 );
                               })}
@@ -695,7 +686,9 @@ export default function Page() {
                                     <div
                                       className={cn(
                                         'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-2 py-0.5 text-[8px] font-bold md:gap-2 md:text-xs',
-                                        event.all_day ? 'bg-main hover:bg-main/80 text-white' : 'hover:bg-muted'
+                                        event.all_day
+                                          ? 'bg-main hover:bg-main/80 text-white'
+                                          : 'bg-main/20 hover:bg-main/30 text-main'
                                       )}
                                       key={event.id}
                                       onClick={(e) => {
@@ -709,29 +702,35 @@ export default function Page() {
                                       style={{
                                         width: 'calc(100% - 4px)',
                                         maxWidth: 'calc(100% - 4px)',
-                                        top: `${isDesktop ? 30 + (dateIndex === 0 ? continuingEvents.length : 0 + multiDayEventsStartingHere.length + index) * 24 : 30 + (dateIndex === 0 ? continuingEvents.length : 0 + multiDayEventsStartingHere.length + index) * 18}px`
+                                        top: `${isDesktop ? 30 + (dateIndex === 0 ? continuingEvents.length : 0 + multiDayEventsStartingHere.length + index) * 24 : 30 + (dateIndex === 0 ? continuingEvents.length : 0 + multiDayEventsStartingHere.length + index) * 16}px`
                                       }}>
                                       {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
-                                      <p className='truncate'>
-                                        {!event.all_day && (
-                                          <span className='mr-1'>{format(event.start, 'HH:mm')}~</span>
-                                        )}
-                                        {event.title}
-                                      </p>
+                                      <p className='truncate'>{event.title}</p>
                                     </div>
                                   );
                                 })}
 
                               {/* more than 3 schedule */}
-                              {eventsForDate.length > 3 && (
+                              {isDesktop && eventsForDate.length > 3 && (
                                 <div
-                                  className='absolute left-0.5 z-10 truncate rounded-xs bg-white px-1 py-0.5 text-left text-[8px] font-bold hover:opacity-50 md:text-xs'
+                                  className='absolute left-0.5 z-10 truncate border-white bg-white px-1 py-0.5 text-left text-[8px] font-bold hover:opacity-50 md:text-xs'
                                   style={{
                                     width: 'calc(100% - 4px)',
                                     maxWidth: 'calc(100% - 4px)',
-                                    top: `${isDesktop ? 30 + 3 * 24 : 30 + 3 * 18}px`
+                                    top: `${isDesktop ? 30 + 3 * 24 : 20 + 3 * 14}px`
                                   }}>
                                   他{eventsForDate.length - 3}件...
+                                </div>
+                              )}
+                              {!isDesktop && eventsForDate.length > 2 && (
+                                <div
+                                  className='absolute left-0.5 z-10 truncate border-white bg-white px-1 py-0.5 text-left text-[8px] font-bold hover:opacity-50 md:text-xs'
+                                  style={{
+                                    width: 'calc(100% - 4px)',
+                                    maxWidth: 'calc(100% - 4px)',
+                                    top: `${isDesktop ? 30 + 3 * 24 : 20 + 3 * 14}px`
+                                  }}>
+                                  他{eventsForDate.length - 2}件...
                                 </div>
                               )}
                             </div>
@@ -756,7 +755,7 @@ export default function Page() {
             </DialogTitle>
             <DialogDescription className='hidden' />
 
-            <ScrollArea className='max-h-80'>
+            <ScrollArea className='h-[calc(100vh-400px)]'>
               <div className='flex flex-col gap-2'>
                 {events
                   .filter(
@@ -768,13 +767,14 @@ export default function Page() {
                   .map((event) => (
                     <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
                       <div className='flex items-center'>
-                        <div className='mr-3 h-10 w-2 rounded-sm bg-amber-500'></div>
+                        <div
+                          className={cn('mr-3 h-10 w-2 rounded-sm', event.all_day ? 'bg-main' : 'bg-amber-500')}></div>
                         <div>
                           <p className='text-sm font-semibold'>{event.title}</p>
                           <span className='text-xs text-gray-600'>
                             {event.all_day
                               ? '終日'
-                              : `${format(new Date(event.start), 'HH:mm')} - ${format(new Date(event.end), 'HH:mm')}`}
+                              : `${format(new Date(new Date(event.start).getTime() - new Date(event.start).getTimezoneOffset() * 60 * 1000), 'HH:mm')} - ${format(new Date(new Date(event.end).getTime() - new Date(event.end).getTimezoneOffset() * 60 * 1000), 'HH:mm')}`}
                           </span>
                         </div>
                       </div>
@@ -817,7 +817,7 @@ export default function Page() {
               <DrawerDescription className='hidden'></DrawerDescription>
             </DrawerHeader>
 
-            <ScrollArea className='max-h-80'>
+            <ScrollArea className='h-[calc(100vh-200px)]'>
               <div className='flex flex-col gap-2'>
                 {events
                   .filter(
@@ -829,13 +829,14 @@ export default function Page() {
                   .map((event) => (
                     <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
                       <div className='flex items-center'>
-                        <div className='mr-3 h-10 w-2 rounded-sm bg-amber-500'></div>
+                        <div
+                          className={cn('mr-3 h-10 w-2 rounded-sm', event.all_day ? 'bg-main' : 'bg-amber-500')}></div>
                         <div>
                           <p className='text-sm font-semibold'>{event.title}</p>
                           <span className='text-xs text-gray-600'>
                             {event.all_day
                               ? '終日'
-                              : `${format(new Date(event.start), 'HH:mm')} - ${format(new Date(event.end), 'HH:mm')}`}
+                              : `${format(new Date(new Date(event.start).getTime() - new Date(event.start).getTimezoneOffset() * 60 * 1000), 'HH:mm')} - ${format(new Date(new Date(event.end).getTime() - new Date(event.end).getTimezoneOffset() * 60 * 1000), 'HH:mm')}`}
                           </span>
                         </div>
                       </div>
