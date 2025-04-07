@@ -708,7 +708,7 @@ export default function Page() {
                                   return (
                                     <div
                                       className={cn(
-                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
+                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
                                         event.all_day
                                           ? 'bg-main hover:bg-main/80 text-white'
                                           : 'bg-main/20 hover:bg-main/30 text-main'
@@ -727,8 +727,10 @@ export default function Page() {
                                           event
                                         });
                                       }}>
-                                      {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
-                                      <p className='truncate text-[7px] md:text-[10px]'>{event.title}</p>
+                                      {!event.all_day && (
+                                        <div className='bg-main h-1 w-1 flex-shrink-0 rounded-full md:h-2 md:w-2' />
+                                      )}
+                                      <p className='truncate text-[8px] md:text-xs'>{event.title}</p>
                                     </div>
                                   );
                                 })}
@@ -747,7 +749,7 @@ export default function Page() {
                                   return (
                                     <div
                                       className={cn(
-                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
+                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
                                         event.all_day
                                           ? 'bg-main hover:bg-main/80 text-white'
                                           : 'bg-main/20 hover:bg-main/30 text-main'
@@ -766,7 +768,9 @@ export default function Page() {
                                           event
                                         });
                                       }}>
-                                      {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
+                                      {!event.all_day && (
+                                        <div className='bg-main h-1 w-1 flex-shrink-0 rounded-full md:h-2 md:w-2' />
+                                      )}
                                     </div>
                                   );
                                 })}
@@ -786,7 +790,7 @@ export default function Page() {
                                 return (
                                   <div
                                     className={cn(
-                                      'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
+                                      'absolute left-0.5 z-10 flex w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
                                       event.all_day
                                         ? 'bg-main hover:bg-main/80 text-white'
                                         : 'bg-main/20 hover:bg-main/30 text-main'
@@ -805,8 +809,10 @@ export default function Page() {
                                         event
                                       });
                                     }}>
-                                    {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
-                                    <p className='truncate text-[7px] md:text-[10px]'>{event.title}</p>
+                                    {!event.all_day && (
+                                      <div className='bg-main h-1 w-1 flex-shrink-0 rounded-full md:h-2 md:w-2' />
+                                    )}
+                                    <p className='truncate text-[8px] md:text-xs'>{event.title}</p>
                                   </div>
                                 );
                               })}
@@ -834,7 +840,7 @@ export default function Page() {
                                   return (
                                     <div
                                       className={cn(
-                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
+                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
                                         event.all_day
                                           ? 'bg-main hover:bg-main/80 text-white'
                                           : 'bg-main/20 hover:bg-main/30 text-main'
@@ -853,8 +859,10 @@ export default function Page() {
                                         maxWidth: 'calc(100% - 4px)',
                                         top: `${isDesktop ? 30 + displayIndex * 24 : 30 + displayIndex * 18}px`
                                       }}>
-                                      {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
-                                      <p className='truncate text-[7px] md:text-[10px]'>{event.title}</p>
+                                      {!event.all_day && (
+                                        <div className='bg-main h-1 w-1 flex-shrink-0 rounded-full md:h-2 md:w-2' />
+                                      )}
+                                      <p className='truncate text-[8px] md:text-xs'>{event.title}</p>
                                     </div>
                                   );
                                 })}
