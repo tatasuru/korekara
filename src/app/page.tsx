@@ -59,42 +59,52 @@ export default function Page() {
 
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
-  // 日本時間とUTC時間の変換ヘルパー関数
-  const convertToUTC = (date: Date): Date => {
-    // JST（日本時間）からUTCへの変換
-    return new Date(date.getTime() - 9 * 60 * 60 * 1000);
-  };
-
-  const convertToJST = (utcDate: Date): Date => {
-    // UTC時間からJST（日本時間）への変換
-    return new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
-  };
-
   // helper function to calculate event positions
   const calculateEventPositions = (eventsForWeek: Event[]) => {
     if (!eventsForWeek || eventsForWeek.length === 0) return {};
 
-    // イベントを開始日でソート
-    const sortedEvents = [...eventsForWeek].sort((a, b) => {
-      const aStart = new Date(a.start);
-      const bStart = new Date(b.start);
+    // 週の開始日を取得
+    const weekStart =
+      eventsForWeek.length > 0
+        ? startOfWeek(new Date(eventsForWeek[0].start.split('T')[0]), { weekStartsOn: 1 })
+        : startOfWeek(new Date(), { weekStartsOn: 1 });
 
-      // 開始日が同じ場合は終了日の遅い順
-      if (aStart.getTime() === bStart.getTime()) {
-        const aEnd = new Date(a.end);
-        const bEnd = new Date(b.end);
-        return bEnd.getTime() - aEnd.getTime();
+    // イベントをタイプと開始日でソート
+    const sortedEvents = [...eventsForWeek].sort((a, b) => {
+      const aStart = new Date(a.start.split('T')[0]);
+      const bStart = new Date(b.start.split('T')[0]);
+      const aEnd = new Date(a.end.split('T')[0]);
+      const bEnd = new Date(b.end.split('T')[0]);
+
+      // 1. 週跨ぎイベントか判定
+      const aIsContinuing = aStart < weekStart;
+      const bIsContinuing = bStart < weekStart;
+
+      if (aIsContinuing && !bIsContinuing) return -1;
+      if (!aIsContinuing && bIsContinuing) return 1;
+
+      // 2. 複数日イベントか判定
+      const aIsMultiDay = format(aStart, 'yyyy-MM-dd') !== format(aEnd, 'yyyy-MM-dd');
+      const bIsMultiDay = format(bStart, 'yyyy-MM-dd') !== format(bEnd, 'yyyy-MM-dd');
+
+      if (aIsMultiDay && !bIsMultiDay) return -1;
+      if (!aIsMultiDay && bIsMultiDay) return 1;
+
+      // 3. 開始日でソート
+      if (aStart.getTime() !== bStart.getTime()) {
+        return aStart.getTime() - bStart.getTime();
       }
 
-      return aStart.getTime() - bStart.getTime();
+      // 4. 開始日が同じ場合は終了日の遅い順
+      return bEnd.getTime() - aEnd.getTime();
     });
 
     const positions: Record<number, number> = {};
     const usedTracks: { [key: string]: boolean }[] = [];
 
     sortedEvents.forEach((event) => {
-      const eventStart = new Date(event.start);
-      const eventEnd = new Date(event.end);
+      const eventStart = new Date(event.start.split('T')[0]);
+      const eventEnd = new Date(event.end.split('T')[0]);
 
       // イベントの期間中の各日付をチェック
       let trackIndex = 0;
@@ -137,18 +147,47 @@ export default function Page() {
   };
 
   // イベントの表示位置を計算する関数
-  const getEventPosition = (event: Event, dateIndex: number, weekStart: Date) => {
-    const eventStart = new Date(event.start);
-    const eventEnd = new Date(event.end);
-    const currentWeekEvents = events.filter((e) => {
-      const eStart = new Date(e.start);
-      const eEnd = new Date(e.end);
-      const weekEnd = addDays(weekStart, 6);
-      return eStart <= weekEnd && eEnd >= weekStart;
+  const getEventPosition = (event: Event, date: Date, weekStart: Date) => {
+    // その日に表示されるすべてのイベントを取得
+    const eventsForDate = events.filter((e) => {
+      const eStart = new Date(e.start.split('T')[0]);
+      const eEnd = new Date(e.end.split('T')[0]);
+      const currentDate = new Date(format(date, 'yyyy-MM-dd'));
+
+      // その日が予定の期間内に含まれている場合
+      return eStart <= currentDate && eEnd >= currentDate;
     });
 
-    const positions = calculateEventPositions(currentWeekEvents);
-    return positions[event.id] || 0;
+    // イベントをタイプ別に並べる
+    const sortedEvents = [...eventsForDate].sort((a, b) => {
+      const aStart = new Date(a.start.split('T')[0]);
+      const bStart = new Date(b.start.split('T')[0]);
+      const currentDate = new Date(format(date, 'yyyy-MM-dd'));
+
+      // 1. 週跨ぎイベント優先
+      const aIsContinuing = aStart < weekStart;
+      const bIsContinuing = bStart < weekStart;
+
+      if (aIsContinuing && !bIsContinuing) return -1;
+      if (!aIsContinuing && bIsContinuing) return 1;
+
+      // 2. 日跨ぎイベント優先
+      const aEnd = new Date(a.end.split('T')[0]);
+      const bEnd = new Date(b.end.split('T')[0]);
+
+      const aIsMultiDay = format(aStart, 'yyyy-MM-dd') !== format(aEnd, 'yyyy-MM-dd');
+      const bIsMultiDay = format(bStart, 'yyyy-MM-dd') !== format(bEnd, 'yyyy-MM-dd');
+
+      if (aIsMultiDay && !bIsMultiDay) return -1;
+      if (!aIsMultiDay && bIsMultiDay) return 1;
+
+      // 3. 時間順
+      return aStart.getTime() - bStart.getTime();
+    });
+
+    // イベントのインデックスを取得
+    const eventIndex = sortedEvents.findIndex((e) => e.id === event.id);
+    return eventIndex >= 0 ? eventIndex : 0;
   };
 
   // Generate week days when date changes
@@ -275,8 +314,9 @@ export default function Page() {
         }
 
         // 時間指定イベントの場合は、JSTでの時刻を保持
-        const jstStart = convertToJST(startDate);
-        const jstEnd = convertToJST(endDate);
+        // タイムゾーンオフセットを考慮して調整（UTCからJSTへの変換）
+        const jstStart = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60 * 1000);
+        const jstEnd = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60 * 1000);
 
         return {
           ...event,
@@ -290,15 +330,22 @@ export default function Page() {
 
   // Create events
   const createEvent = async (scheduleData: Pick<Event, 'title' | 'start' | 'end' | 'all_day'>) => {
+    // Create Date objects with the correct timezone
+    const startDate = new Date(scheduleData.start);
+    const endDate = new Date(scheduleData.end);
+
     // 終日イベントの場合は日付のみを使用
     if (scheduleData.all_day) {
+      const start = format(startDate, 'yyyy-MM-dd');
+      const end = format(endDate, 'yyyy-MM-dd');
+
       const { data, error } = await supabase
         .from('calendar')
         .insert([
           {
             title: scheduleData.title,
-            start: scheduleData.start,
-            end: scheduleData.end,
+            start,
+            end,
             all_day: scheduleData.all_day
           }
         ])
@@ -313,14 +360,17 @@ export default function Page() {
       return;
     }
 
-    // 時間指定イベントの場合は、既にUTC形式で渡されるため、そのまま保存
+    // 時間指定イベントの場合は、タイムゾーンを考慮してUTCに変換
+    const utcStart = new Date(startDate.getTime() + startDate.getTimezoneOffset() * 60 * 1000);
+    const utcEnd = new Date(endDate.getTime() + endDate.getTimezoneOffset() * 60 * 1000);
+
     const { data, error } = await supabase
       .from('calendar')
       .insert([
         {
           title: scheduleData.title,
-          start: scheduleData.start,
-          end: scheduleData.end,
+          start: utcStart.toISOString(),
+          end: utcEnd.toISOString(),
           all_day: scheduleData.all_day
         }
       ])
@@ -339,13 +389,45 @@ export default function Page() {
     id: number,
     { title, start, end, all_day }: Pick<Event, 'title' | 'start' | 'end' | 'all_day'>
   ) => {
-    // 終日イベントの場合もそのまま保存（すでに正しいフォーマットに変換されている）
+    // Create Date objects with the correct timezone
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    // 終日イベントの場合は日付のみを使用
+    if (all_day) {
+      const newStart = format(startDate, 'yyyy-MM-dd');
+      const newEnd = format(endDate, 'yyyy-MM-dd');
+
+      const { data, error } = await supabase
+        .from('calendar')
+        .update({
+          title,
+          start: newStart,
+          end: newEnd,
+          all_day
+        })
+        .match({ id })
+        .select();
+
+      if (error) {
+        console.error('Error updating event:', error.message);
+        return;
+      }
+
+      await getAllSchedules();
+      return;
+    }
+
+    // 時間指定イベントの場合は、タイムゾーンを考慮してUTCに変換
+    const utcStart = new Date(startDate.getTime() + startDate.getTimezoneOffset() * 60 * 1000);
+    const utcEnd = new Date(endDate.getTime() + endDate.getTimezoneOffset() * 60 * 1000);
+
     const { data, error } = await supabase
       .from('calendar')
       .update({
         title,
-        start,
-        end,
+        start: utcStart.toISOString(),
+        end: utcEnd.toISOString(),
         all_day
       })
       .match({ id })
@@ -370,8 +452,6 @@ export default function Page() {
 
     setEvents(events.filter((event) => event.id !== id));
   };
-
-  // 不要なので削除
 
   return (
     <div className='flex h-full w-full flex-col'>
@@ -501,13 +581,10 @@ export default function Page() {
                       const eventsForDate = events.filter((event) => {
                         const eventStart = new Date(event.start.split('T')[0]);
                         const eventEnd = new Date(event.end.split('T')[0]);
-                        const currentDate = new Date(today);
+                        const currentDate = new Date(format(today, 'yyyy-MM-dd'));
 
-                        return (
-                          (eventStart <= currentDate && eventEnd >= currentDate) ||
-                          format(eventStart, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd') ||
-                          format(eventEnd, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd')
-                        );
+                        // その日が予定の期間内に含まれている場合（開始日から終了日までの間）
+                        return eventStart <= currentDate && eventEnd >= currentDate;
                       });
 
                       // 1. Find single-day events for this date
@@ -572,7 +649,7 @@ export default function Page() {
                                   const eventEnd = new Date(event.end);
                                   const weekStart = props.dates[0];
                                   const daysInThisWeek = Math.min(differenceInDays(eventEnd, weekStart) + 1, 7);
-                                  const position = getEventPosition(event, dateIndex, weekStart);
+                                  const position = getEventPosition(event, date, weekStart);
 
                                   return (
                                     <div
@@ -602,7 +679,7 @@ export default function Page() {
                                   );
                                 })}
 
-                              {multiDayEventsStartingHere.map((event) => {
+                              {multiDayEventsStartingHere.map((event, index) => {
                                 const eventStart = new Date(event.start);
                                 const eventEnd = new Date(event.end);
                                 const weekStart = props.dates[0];
@@ -611,7 +688,8 @@ export default function Page() {
                                   differenceInDays(eventEnd, eventStart) + 1,
                                   7 - dateIndex
                                 );
-                                const position = getEventPosition(event, dateIndex, weekStart);
+                                // 表示位置を計算（週跨ぎイベントの数を考慮）
+                                const position = getEventPosition(event, date, weekStart);
 
                                 return (
                                   <div
@@ -652,6 +730,9 @@ export default function Page() {
                                   )
                                 )
                                 .map((event, index) => {
+                                  // 表示位置を計算（週跨ぎイベントと日跨ぎイベントの数を考慮）
+                                  const position = getEventPosition(event, date, weekStart);
+
                                   return (
                                     <div
                                       className={cn(
@@ -672,7 +753,7 @@ export default function Page() {
                                       style={{
                                         width: 'calc(100% - 4px)',
                                         maxWidth: 'calc(100% - 4px)',
-                                        top: `${isDesktop ? 30 + (dateIndex === 0 ? continuingEvents.length : 0 + multiDayEventsStartingHere.length + index) * 24 : 30 + (dateIndex === 0 ? continuingEvents.length : 0 + multiDayEventsStartingHere.length + index) * 16}px`
+                                        top: `${isDesktop ? 30 + position * 24 : 30 + position * 16}px`
                                       }}>
                                       {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
                                       <p className='truncate'>{event.title}</p>
@@ -682,6 +763,17 @@ export default function Page() {
 
                               {/* more than 3 schedule */}
                               {isDesktop && eventsForDate.length > 3 && (
+                                <div
+                                  className='absolute left-0.5 z-10 truncate border-white bg-white px-1 py-0.5 text-left text-[8px] font-bold hover:opacity-50 md:text-xs'
+                                  style={{
+                                    width: 'calc(100% - 4px)',
+                                    maxWidth: 'calc(100% - 4px)',
+                                    top: `${isDesktop ? 30 + 3 * 24 : 20 + 3 * 14}px`
+                                  }}>
+                                  他{eventsForDate.length - 3}件...
+                                </div>
+                              )}
+                              {!isDesktop && eventsForDate.length > 2 && (
                                 <div
                                   className='absolute left-0.5 z-10 truncate border-white bg-white px-1 py-0.5 text-left text-[8px] font-bold hover:opacity-50 md:text-xs'
                                   style={{
@@ -717,55 +809,69 @@ export default function Page() {
             <ScrollArea className='h-[calc(100vh-400px)]'>
               <div className='flex flex-col gap-2'>
                 {events
-                  .filter(
-                    (event) =>
-                      format(new Date(event.start), 'yyyy-MM-dd') ===
-                      (selectedDate && format(selectedDate, 'yyyy-MM-dd'))
-                  )
-                  .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
-                  .map((event) => {
-                    // 時間指定イベントの場合、時間部分を抽出
-                    let startTime = '終日';
-                    let endTime = '';
+                  .filter((event) => {
+                    if (!selectedDate) return false;
 
-                    if (!event.all_day && event.start.includes('T')) {
-                      // T部分を含むISO形式の場合（時間指定イベント）
-                      const startDate = new Date(event.start);
-                      const endDate = new Date(event.end);
-                      startTime = format(new Date(startDate.getTime() + 9 * 60 * 60 * 1000), 'HH:mm');
-                      endTime = format(new Date(endDate.getTime() + 9 * 60 * 60 * 1000), 'HH:mm');
-                    }
+                    const eventStart = new Date(event.start.split('T')[0]);
+                    const eventEnd = new Date(event.end.split('T')[0]);
+                    const currentDate = new Date(format(selectedDate, 'yyyy-MM-dd'));
 
-                    return (
-                      <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
-                        <div className='flex items-center'>
-                          <div
-                            className={cn(
-                              'mr-3 h-10 w-2 rounded-sm',
-                              event.all_day ? 'bg-main' : 'bg-amber-500'
-                            )}></div>
-                          <div>
-                            <p className='text-sm font-semibold'>{event.title}</p>
-                            <span className='text-xs text-gray-600'>
-                              {event.all_day ? '終日' : `${startTime} - ${endTime}`}
-                            </span>
-                          </div>
-                        </div>
-                        <div className='flex space-x-2'>
-                          <Button
-                            type='button'
-                            size={'xs'}
-                            variant={'ghost'}
-                            onClick={() => handleEditOpenClose({ isOpen: true, event })}>
-                            <Edit size={8} />
-                          </Button>
-                          <Button size={'xs'} variant={'ghost'} onClick={() => deleteEvent(event.id)}>
-                            <Trash size={8} className='text-destructive' />
-                          </Button>
+                    // その日が予定の期間内に含まれている場合（開始日から終了日までの間）
+                    return eventStart <= currentDate && eventEnd >= currentDate;
+                  })
+                  .sort((a, b) => {
+                    // 1. 週跨ぎイベント優先（他の日から継続しているイベント）
+                    const aStart = new Date(a.start.split('T')[0]);
+                    const bStart = new Date(b.start.split('T')[0]);
+                    const selectedDateStart = selectedDate ? new Date(format(selectedDate, 'yyyy-MM-dd')) : new Date();
+
+                    const aIsContinuing = aStart < selectedDateStart;
+                    const bIsContinuing = bStart < selectedDateStart;
+
+                    if (aIsContinuing && !bIsContinuing) return -1;
+                    if (!aIsContinuing && bIsContinuing) return 1;
+
+                    // 2. 複数日イベント優先
+                    const aEnd = new Date(a.end.split('T')[0]);
+                    const bEnd = new Date(b.end.split('T')[0]);
+
+                    const aIsMultiDay = format(aStart, 'yyyy-MM-dd') !== format(aEnd, 'yyyy-MM-dd');
+                    const bIsMultiDay = format(bStart, 'yyyy-MM-dd') !== format(bEnd, 'yyyy-MM-dd');
+
+                    if (aIsMultiDay && !bIsMultiDay) return -1;
+                    if (!aIsMultiDay && bIsMultiDay) return 1;
+
+                    // 3. 時間順
+                    return new Date(a.start).getTime() - new Date(b.start).getTime();
+                  })
+                  .map((event) => (
+                    <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
+                      <div className='flex items-center'>
+                        <div
+                          className={cn('mr-3 h-10 w-2 rounded-sm', event.all_day ? 'bg-main' : 'bg-amber-500')}></div>
+                        <div>
+                          <p className='text-sm font-semibold'>{event.title}</p>
+                          <span className='text-xs text-gray-600'>
+                            {event.all_day
+                              ? '終日'
+                              : `${format(new Date(new Date(event.start).getTime() - new Date(event.start).getTimezoneOffset() * 60 * 1000), 'HH:mm')} - ${format(new Date(new Date(event.end).getTime() - new Date(event.end).getTimezoneOffset() * 60 * 1000), 'HH:mm')}`}
+                          </span>
                         </div>
                       </div>
-                    );
-                  })}
+                      <div className='flex space-x-2'>
+                        <Button
+                          type='button'
+                          size={'xs'}
+                          variant={'ghost'}
+                          onClick={() => handleEditOpenClose({ isOpen: true, event })}>
+                          <Edit size={8} />
+                        </Button>
+                        <Button size={'xs'} variant={'ghost'} onClick={() => deleteEvent(event.id)}>
+                          <Trash size={8} className='text-destructive' />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
               </div>
             </ScrollArea>
 
@@ -794,55 +900,69 @@ export default function Page() {
             <ScrollArea className='h-[calc(100vh-200px)]'>
               <div className='flex flex-col gap-2'>
                 {events
-                  .filter(
-                    (event) =>
-                      format(new Date(event.start), 'yyyy-MM-dd') ===
-                      (selectedDate && format(selectedDate, 'yyyy-MM-dd'))
-                  )
-                  .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
-                  .map((event) => {
-                    // 時間指定イベントの場合、時間部分を抽出
-                    let startTime = '終日';
-                    let endTime = '';
+                  .filter((event) => {
+                    if (!selectedDate) return false;
 
-                    if (!event.all_day && event.start.includes('T')) {
-                      // T部分を含むISO形式の場合（時間指定イベント）
-                      const startDate = new Date(event.start);
-                      const endDate = new Date(event.end);
-                      startTime = format(new Date(startDate.getTime() + 9 * 60 * 60 * 1000), 'HH:mm');
-                      endTime = format(new Date(endDate.getTime() + 9 * 60 * 60 * 1000), 'HH:mm');
-                    }
+                    const eventStart = new Date(event.start.split('T')[0]);
+                    const eventEnd = new Date(event.end.split('T')[0]);
+                    const currentDate = new Date(format(selectedDate, 'yyyy-MM-dd'));
 
-                    return (
-                      <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
-                        <div className='flex items-center'>
-                          <div
-                            className={cn(
-                              'mr-3 h-10 w-2 rounded-sm',
-                              event.all_day ? 'bg-main' : 'bg-amber-500'
-                            )}></div>
-                          <div>
-                            <p className='text-sm font-semibold'>{event.title}</p>
-                            <span className='text-xs text-gray-600'>
-                              {event.all_day ? '終日' : `${startTime} - ${endTime}`}
-                            </span>
-                          </div>
-                        </div>
-                        <div className='flex space-x-2'>
-                          <Button
-                            type='button'
-                            size={'xs'}
-                            variant={'ghost'}
-                            onClick={() => handleEditOpenClose({ isOpen: true, event })}>
-                            <Edit size={8} />
-                          </Button>
-                          <Button size={'xs'} variant={'ghost'} onClick={() => deleteEvent(event.id)}>
-                            <Trash size={8} className='text-destructive' />
-                          </Button>
+                    // その日が予定の期間内に含まれている場合（開始日から終了日までの間）
+                    return eventStart <= currentDate && eventEnd >= currentDate;
+                  })
+                  .sort((a, b) => {
+                    // 1. 週跨ぎイベント優先（他の日から継続しているイベント）
+                    const aStart = new Date(a.start.split('T')[0]);
+                    const bStart = new Date(b.start.split('T')[0]);
+                    const selectedDateStart = selectedDate ? new Date(format(selectedDate, 'yyyy-MM-dd')) : new Date();
+
+                    const aIsContinuing = aStart < selectedDateStart;
+                    const bIsContinuing = bStart < selectedDateStart;
+
+                    if (aIsContinuing && !bIsContinuing) return -1;
+                    if (!aIsContinuing && bIsContinuing) return 1;
+
+                    // 2. 複数日イベント優先
+                    const aEnd = new Date(a.end.split('T')[0]);
+                    const bEnd = new Date(b.end.split('T')[0]);
+
+                    const aIsMultiDay = format(aStart, 'yyyy-MM-dd') !== format(aEnd, 'yyyy-MM-dd');
+                    const bIsMultiDay = format(bStart, 'yyyy-MM-dd') !== format(bEnd, 'yyyy-MM-dd');
+
+                    if (aIsMultiDay && !bIsMultiDay) return -1;
+                    if (!aIsMultiDay && bIsMultiDay) return 1;
+
+                    // 3. 時間順
+                    return new Date(a.start).getTime() - new Date(b.start).getTime();
+                  })
+                  .map((event) => (
+                    <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
+                      <div className='flex items-center'>
+                        <div
+                          className={cn('mr-3 h-10 w-2 rounded-sm', event.all_day ? 'bg-main' : 'bg-amber-500')}></div>
+                        <div>
+                          <p className='text-sm font-semibold'>{event.title}</p>
+                          <span className='text-xs text-gray-600'>
+                            {event.all_day
+                              ? '終日'
+                              : `${format(new Date(new Date(event.start).getTime() - new Date(event.start).getTimezoneOffset() * 60 * 1000), 'HH:mm')} - ${format(new Date(new Date(event.end).getTime() - new Date(event.end).getTimezoneOffset() * 60 * 1000), 'HH:mm')}`}
+                          </span>
                         </div>
                       </div>
-                    );
-                  })}
+                      <div className='flex space-x-2'>
+                        <Button
+                          type='button'
+                          size={'xs'}
+                          variant={'ghost'}
+                          onClick={() => handleEditOpenClose({ isOpen: true, event })}>
+                          <Edit size={8} />
+                        </Button>
+                        <Button size={'xs'} variant={'ghost'} onClick={() => deleteEvent(event.id)}>
+                          <Trash size={8} className='text-destructive' />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
               </div>
             </ScrollArea>
 
