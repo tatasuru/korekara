@@ -283,7 +283,7 @@ export default function Todos() {
         <DndContext onDragOver={handleDragOver} onDragEnd={handleDragEnd} modifiers={[restrictToVerticalAxis]}>
           <ScrollArea
             ref={scrollAreaRef}
-            className='relative h-[calc(100svh-210px)] w-full overscroll-none md:h-[calc(100svh-160px)] md:max-w-2xl'>
+            className='relative h-[calc(100dvh-210px)] w-full overscroll-none md:h-[calc(100dvh-160px)] md:max-w-2xl'>
             <SortableContext items={todos.map((todo) => todo.id)}>
               <div className='flex flex-col gap-2'>
                 {todos.map((todo) => (
@@ -469,7 +469,7 @@ export default function Todos() {
         </Dialog>
       ) : (
         <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent className='h-full !max-h-[80svh]'>
+          <DrawerContent className='h-full !max-h-[80dvh]'>
             <DrawerHeader className='p-0'>
               <DrawerTitle className='text-sm font-bold'></DrawerTitle>
               <DrawerDescription></DrawerDescription>

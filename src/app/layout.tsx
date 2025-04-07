@@ -33,7 +33,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} overflow-hidden overscroll-none antialiased md:overflow-auto md:overscroll-auto`}>
         <SidebarProvider>
           <AppSidebar />
-          <main className='flex h-[calc(100svh-75px)] w-full flex-col gap-2 p-4 md:h-auto md:p-2'>
+          <main className='flex h-[calc(100dvh-75px)] w-full flex-col gap-2 p-4 md:h-auto md:p-2'>
             <SidebarTrigger className='hidden md:flex' />
             {children}
           </main>

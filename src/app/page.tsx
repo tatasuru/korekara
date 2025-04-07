@@ -809,7 +809,7 @@ export default function Page() {
         </Dialog>
       ) : (
         <Drawer open={dialogOpen} onOpenChange={() => handleDialogOpenClose({ isOpen: false })}>
-          <DrawerContent className='h-full !max-h-[98svh] gap-4 px-4'>
+          <DrawerContent className='h-full !max-h-[98dvh] gap-4 px-4'>
             <DrawerHeader className='p-0'>
               <DrawerTitle className='text-sm font-bold'>
                 {selectedDate && format(selectedDate, 'yyyy年MM月dd日(E)', { locale: ja })}の予定

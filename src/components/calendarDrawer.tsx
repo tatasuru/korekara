@@ -109,7 +109,7 @@ export function CalendarDrawer({
 
   return (
     <Drawer open={open} onOpenChange={(isOpen) => handleEditOpenClose({ isOpen })}>
-      <DrawerContent className='h-full !max-h-[98svh]'>
+      <DrawerContent className='h-full !max-h-[98dvh]'>
         <DrawerHeader className='p-0'>
           <DrawerTitle className='text-sm font-bold'></DrawerTitle>
           <DrawerDescription></DrawerDescription>
