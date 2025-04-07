@@ -824,7 +824,12 @@ export default function Page() {
                                 )
                                 .map((event, index) => {
                                   // 表示位置を計算（週跨ぎイベントと日跨ぎイベントの数を考慮）
-                                  const position = getEventPosition(event, date, weekStart);
+                                  // カスタム位置計算 - イベントの直前にあるイベントの数を基準にする
+                                  const displayIndex =
+                                    (dateIndex === 0 ? continuingEvents.length : 0) +
+                                    multiDayEventsStartingHere.length +
+                                    (dateIndex > 0 ? midWeekContinuingEvents.length : 0) +
+                                    index;
 
                                   return (
                                     <div
@@ -846,7 +851,7 @@ export default function Page() {
                                       style={{
                                         width: 'calc(100% - 4px)',
                                         maxWidth: 'calc(100% - 4px)',
-                                        top: `${isDesktop ? 30 + position * 24 : 30 + position * 18}px`
+                                        top: `${isDesktop ? 30 + displayIndex * 24 : 30 + displayIndex * 18}px`
                                       }}>
                                       {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
                                       <p className='truncate text-[7px] md:text-[10px]'>{event.title}</p>
@@ -863,7 +868,7 @@ export default function Page() {
                                     maxWidth: 'calc(100% - 4px)',
                                     top: `${30 + 3 * 24}px`
                                   }}>
-                                  他{eventsForDate.length - 3}件...
+                                  他 {eventsForDate.length - 3} 件...
                                 </div>
                               )}
                               {!isDesktop && eventsForDate.length > 2 && (
@@ -874,7 +879,7 @@ export default function Page() {
                                     maxWidth: 'calc(100% - 4px)',
                                     top: `${30 + 2 * 18}px`
                                   }}>
-                                  他{eventsForDate.length - 2}件...
+                                  他 {eventsForDate.length - 2} 件...
                                 </div>
                               )}
                             </div>
