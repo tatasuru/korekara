@@ -618,6 +618,17 @@ export default function Page() {
                         );
                       });
 
+                      // 4. Find multi-day events that CONTINUE through this date (started in current or previous week)
+                      const midWeekContinuingEvents = events.filter((event) => {
+                        const eventStart = new Date(event.start);
+                        const eventEnd = new Date(event.end);
+                        return (
+                          format(date, 'yyyy-MM-dd') > format(eventStart, 'yyyy-MM-dd') &&
+                          format(date, 'yyyy-MM-dd') <= format(eventEnd, 'yyyy-MM-dd') &&
+                          format(date, 'yyyy-MM-dd') !== format(weekStart, 'yyyy-MM-dd')
+                        );
+                      });
+
                       return (
                         <td
                           className='[&:has([aria-selected])]:bg-accent relative py-2 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected].day-range-end)]:rounded-r-md'
@@ -675,6 +686,44 @@ export default function Page() {
                                       }}>
                                       {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
                                       <p className='truncate'>{event.title}</p>
+                                    </div>
+                                  );
+                                })}
+
+                              {/* 週の途中の日で、その日より前に開始して、その日を含む予定を表示 */}
+                              {dateIndex > 0 &&
+                                midWeekContinuingEvents.map((event) => {
+                                  const eventEnd = new Date(event.end);
+                                  const currentDate = new Date(date);
+                                  const daysRemaining = Math.min(
+                                    differenceInDays(eventEnd, currentDate) + 1,
+                                    7 - dateIndex
+                                  );
+                                  const position = getEventPosition(event, date, weekStart);
+
+                                  return (
+                                    <div
+                                      className={cn(
+                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-2 py-0.5 text-[8px] font-bold md:gap-2 md:text-xs',
+                                        event.all_day
+                                          ? 'bg-main hover:bg-main/80 text-white'
+                                          : 'bg-main/20 hover:bg-main/30 text-main'
+                                      )}
+                                      style={{
+                                        width: `calc(${daysRemaining * 100}% - 4px)`,
+                                        maxWidth: `calc(${daysRemaining * 100}% - 4px)`,
+                                        top: `${isDesktop ? 30 + position * 24 : 20 + position * 14}px`
+                                      }}
+                                      key={`midweek-continuing-${event.id}`}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEditOpenClose({
+                                          isOpen: true,
+                                          day: date,
+                                          event
+                                        });
+                                      }}>
+                                      {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
                                     </div>
                                   );
                                 })}
