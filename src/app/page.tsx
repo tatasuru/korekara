@@ -697,7 +697,7 @@ export default function Page() {
                                 {format(date, 'd')}
                               </span>
                             </div>
-                            <div className='max-h-[120px] min-h-[120px] overflow-hidden md:max-h-none md:min-h-[100px]'>
+                            <div className='max-h-[60px] min-h-[60px] overflow-hidden md:max-h-none md:min-h-[100px]'>
                               {dateIndex === 0 &&
                                 continuingEvents.map((event) => {
                                   const eventEnd = new Date(event.end);
@@ -708,7 +708,7 @@ export default function Page() {
                                   return (
                                     <div
                                       className={cn(
-                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-2 py-0.5 text-[8px] font-bold md:gap-2 md:text-xs',
+                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
                                         event.all_day
                                           ? 'bg-main hover:bg-main/80 text-white'
                                           : 'bg-main/20 hover:bg-main/30 text-main'
@@ -728,7 +728,7 @@ export default function Page() {
                                         });
                                       }}>
                                       {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
-                                      <p className='truncate'>{event.title}</p>
+                                      <p className='truncate text-[7px] md:text-[10px]'>{event.title}</p>
                                     </div>
                                   );
                                 })}
@@ -747,7 +747,7 @@ export default function Page() {
                                   return (
                                     <div
                                       className={cn(
-                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-2 py-0.5 text-[8px] font-bold md:gap-2 md:text-xs',
+                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
                                         event.all_day
                                           ? 'bg-main hover:bg-main/80 text-white'
                                           : 'bg-main/20 hover:bg-main/30 text-main'
@@ -786,7 +786,7 @@ export default function Page() {
                                 return (
                                   <div
                                     className={cn(
-                                      'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-2 py-0.5 text-[8px] font-bold md:gap-2 md:text-xs',
+                                      'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
                                       event.all_day
                                         ? 'bg-main hover:bg-main/80 text-white'
                                         : 'bg-main/20 hover:bg-main/30 text-main'
@@ -806,7 +806,7 @@ export default function Page() {
                                       });
                                     }}>
                                     {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
-                                    <p className='truncate'>{event.title}</p>
+                                    <p className='truncate text-[7px] md:text-[10px]'>{event.title}</p>
                                   </div>
                                 );
                               })}
@@ -829,7 +829,7 @@ export default function Page() {
                                   return (
                                     <div
                                       className={cn(
-                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-2 py-0.5 text-[8px] font-bold md:gap-2 md:text-xs',
+                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-px rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
                                         event.all_day
                                           ? 'bg-main hover:bg-main/80 text-white'
                                           : 'bg-main/20 hover:bg-main/30 text-main'
@@ -849,7 +849,7 @@ export default function Page() {
                                         top: `${isDesktop ? 30 + position * 24 : 30 + position * 18}px`
                                       }}>
                                       {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
-                                      <p className='truncate'>{event.title}</p>
+                                      <p className='truncate text-[7px] md:text-[10px]'>{event.title}</p>
                                     </div>
                                   );
                                 })}
@@ -872,7 +872,7 @@ export default function Page() {
                                   style={{
                                     width: 'calc(100% - 4px)',
                                     maxWidth: 'calc(100% - 4px)',
-                                    top: `${30 + Math.min(2, eventsForDate.length > 0 ? Math.min(eventsForDate.length - 1, 1) : 0) * 18}px`
+                                    top: `${30 + 2 * 18}px`
                                   }}>
                                   他{eventsForDate.length - 2}件...
                                 </div>
