@@ -246,7 +246,10 @@ export default function Page() {
 
       // 日付が変更された場合は、カレンダーの表示も更新
       if (date && day && format(day, 'yyyy-MM-dd') !== format(date, 'yyyy-MM-dd')) {
-        setDate(day);
+        // 現在の月に含まれる日付のみsetDateを実行
+        if (day.getMonth() === date.getMonth()) {
+          setDate(day);
+        }
       }
 
       // ダイアログが開いている場合は閉じる
@@ -291,7 +294,10 @@ export default function Page() {
 
       // 日付が変更された場合は、カレンダーの表示も更新
       if (date && day && format(day, 'yyyy-MM-dd') !== format(date, 'yyyy-MM-dd')) {
-        setDate(day);
+        // 現在の月に含まれる日付のみsetDateを実行
+        if (day.getMonth() === date.getMonth()) {
+          setDate(day);
+        }
       }
     } else {
       setDialogOpen(isOpen);
@@ -539,12 +545,22 @@ export default function Page() {
             onSelect={(newDate) => {
               // Prevent deselection when clicking the same date twice
               if (newDate !== undefined || !date) {
-                setDate(newDate);
+                // 現在の月に含まれる日付のみsetDateを実行
+                if (newDate && date && newDate.getMonth() === date.getMonth()) {
+                  setDate(newDate);
+                } else if (newDate && date && newDate.getMonth() !== date.getMonth()) {
+                  // 現在の月に含まれない日付の場合は、その日付を選択するが月は変更しない
+                  setSelectedDate(newDate);
+                  handleDialogOpenClose({ isOpen: true, day: newDate });
+                } else {
+                  setDate(newDate);
+                }
               }
             }}
             className='flex h-full w-full p-0 md:p-3'
             locale={ja}
             weekStartsOn={1}
+            fixedWeeks
             formatters={{
               formatCaption: (jaDate) => {
                 const date = new Date(jaDate);
