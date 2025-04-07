@@ -59,6 +59,17 @@ export default function Page() {
 
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
+  // 日本時間とUTC時間の変換ヘルパー関数
+  const convertToUTC = (date: Date): Date => {
+    // JST（日本時間）からUTCへの変換
+    return new Date(date.getTime() - 9 * 60 * 60 * 1000);
+  };
+
+  const convertToJST = (utcDate: Date): Date => {
+    // UTC時間からJST（日本時間）への変換
+    return new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
+  };
+
   // helper function to calculate event positions
   const calculateEventPositions = (eventsForWeek: Event[]) => {
     if (!eventsForWeek || eventsForWeek.length === 0) return {};
@@ -264,9 +275,8 @@ export default function Page() {
         }
 
         // 時間指定イベントの場合は、JSTでの時刻を保持
-        // タイムゾーンオフセットを考慮して調整（UTCからJSTへの変換）
-        const jstStart = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60 * 1000);
-        const jstEnd = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60 * 1000);
+        const jstStart = convertToJST(startDate);
+        const jstEnd = convertToJST(endDate);
 
         return {
           ...event,
@@ -280,22 +290,15 @@ export default function Page() {
 
   // Create events
   const createEvent = async (scheduleData: Pick<Event, 'title' | 'start' | 'end' | 'all_day'>) => {
-    // Create Date objects with the correct timezone
-    const startDate = new Date(scheduleData.start);
-    const endDate = new Date(scheduleData.end);
-
     // 終日イベントの場合は日付のみを使用
     if (scheduleData.all_day) {
-      const start = format(startDate, 'yyyy-MM-dd');
-      const end = format(endDate, 'yyyy-MM-dd');
-
       const { data, error } = await supabase
         .from('calendar')
         .insert([
           {
             title: scheduleData.title,
-            start,
-            end,
+            start: scheduleData.start,
+            end: scheduleData.end,
             all_day: scheduleData.all_day
           }
         ])
@@ -310,17 +313,14 @@ export default function Page() {
       return;
     }
 
-    // 時間指定イベントの場合は、タイムゾーンを考慮してUTCに変換
-    const utcStart = new Date(startDate.getTime() + startDate.getTimezoneOffset() * 60 * 1000);
-    const utcEnd = new Date(endDate.getTime() + endDate.getTimezoneOffset() * 60 * 1000);
-
+    // 時間指定イベントの場合は、既にUTC形式で渡されるため、そのまま保存
     const { data, error } = await supabase
       .from('calendar')
       .insert([
         {
           title: scheduleData.title,
-          start: utcStart.toISOString(),
-          end: utcEnd.toISOString(),
+          start: scheduleData.start,
+          end: scheduleData.end,
           all_day: scheduleData.all_day
         }
       ])
@@ -339,45 +339,13 @@ export default function Page() {
     id: number,
     { title, start, end, all_day }: Pick<Event, 'title' | 'start' | 'end' | 'all_day'>
   ) => {
-    // Create Date objects with the correct timezone
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-
-    // 終日イベントの場合は日付のみを使用
-    if (all_day) {
-      const newStart = format(startDate, 'yyyy-MM-dd');
-      const newEnd = format(endDate, 'yyyy-MM-dd');
-
-      const { data, error } = await supabase
-        .from('calendar')
-        .update({
-          title,
-          start: newStart,
-          end: newEnd,
-          all_day
-        })
-        .match({ id })
-        .select();
-
-      if (error) {
-        console.error('Error updating event:', error.message);
-        return;
-      }
-
-      await getAllSchedules();
-      return;
-    }
-
-    // 時間指定イベントの場合は、タイムゾーンを考慮してUTCに変換
-    const utcStart = new Date(startDate.getTime() + startDate.getTimezoneOffset() * 60 * 1000);
-    const utcEnd = new Date(endDate.getTime() + endDate.getTimezoneOffset() * 60 * 1000);
-
+    // 終日イベントの場合もそのまま保存（すでに正しいフォーマットに変換されている）
     const { data, error } = await supabase
       .from('calendar')
       .update({
         title,
-        start: utcStart.toISOString(),
-        end: utcEnd.toISOString(),
+        start,
+        end,
         all_day
       })
       .match({ id })
@@ -402,6 +370,8 @@ export default function Page() {
 
     setEvents(events.filter((event) => event.id !== id));
   };
+
+  // 不要なので削除
 
   return (
     <div className='flex h-full w-full flex-col'>
@@ -719,17 +689,6 @@ export default function Page() {
                                     maxWidth: 'calc(100% - 4px)',
                                     top: `${isDesktop ? 30 + 3 * 24 : 20 + 3 * 14}px`
                                   }}>
-                                  他{eventsForDate.length - 3}件...
-                                </div>
-                              )}
-                              {!isDesktop && eventsForDate.length > 2 && (
-                                <div
-                                  className='absolute left-0.5 z-10 truncate border-white bg-white px-1 py-0.5 text-left text-[8px] font-bold hover:opacity-50 md:text-xs'
-                                  style={{
-                                    width: 'calc(100% - 4px)',
-                                    maxWidth: 'calc(100% - 4px)',
-                                    top: `${isDesktop ? 30 + 3 * 24 : 20 + 3 * 14}px`
-                                  }}>
                                   他{eventsForDate.length - 2}件...
                                 </div>
                               )}
@@ -764,34 +723,49 @@ export default function Page() {
                       (selectedDate && format(selectedDate, 'yyyy-MM-dd'))
                   )
                   .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
-                  .map((event) => (
-                    <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
-                      <div className='flex items-center'>
-                        <div
-                          className={cn('mr-3 h-10 w-2 rounded-sm', event.all_day ? 'bg-main' : 'bg-amber-500')}></div>
-                        <div>
-                          <p className='text-sm font-semibold'>{event.title}</p>
-                          <span className='text-xs text-gray-600'>
-                            {event.all_day
-                              ? '終日'
-                              : `${format(new Date(new Date(event.start).getTime() - new Date(event.start).getTimezoneOffset() * 60 * 1000), 'HH:mm')} - ${format(new Date(new Date(event.end).getTime() - new Date(event.end).getTimezoneOffset() * 60 * 1000), 'HH:mm')}`}
-                          </span>
+                  .map((event) => {
+                    // 時間指定イベントの場合、時間部分を抽出
+                    let startTime = '終日';
+                    let endTime = '';
+
+                    if (!event.all_day && event.start.includes('T')) {
+                      // T部分を含むISO形式の場合（時間指定イベント）
+                      const startDate = new Date(event.start);
+                      const endDate = new Date(event.end);
+                      startTime = format(new Date(startDate.getTime() + 9 * 60 * 60 * 1000), 'HH:mm');
+                      endTime = format(new Date(endDate.getTime() + 9 * 60 * 60 * 1000), 'HH:mm');
+                    }
+
+                    return (
+                      <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
+                        <div className='flex items-center'>
+                          <div
+                            className={cn(
+                              'mr-3 h-10 w-2 rounded-sm',
+                              event.all_day ? 'bg-main' : 'bg-amber-500'
+                            )}></div>
+                          <div>
+                            <p className='text-sm font-semibold'>{event.title}</p>
+                            <span className='text-xs text-gray-600'>
+                              {event.all_day ? '終日' : `${startTime} - ${endTime}`}
+                            </span>
+                          </div>
+                        </div>
+                        <div className='flex space-x-2'>
+                          <Button
+                            type='button'
+                            size={'xs'}
+                            variant={'ghost'}
+                            onClick={() => handleEditOpenClose({ isOpen: true, event })}>
+                            <Edit size={8} />
+                          </Button>
+                          <Button size={'xs'} variant={'ghost'} onClick={() => deleteEvent(event.id)}>
+                            <Trash size={8} className='text-destructive' />
+                          </Button>
                         </div>
                       </div>
-                      <div className='flex space-x-2'>
-                        <Button
-                          type='button'
-                          size={'xs'}
-                          variant={'ghost'}
-                          onClick={() => handleEditOpenClose({ isOpen: true, event })}>
-                          <Edit size={8} />
-                        </Button>
-                        <Button size={'xs'} variant={'ghost'} onClick={() => deleteEvent(event.id)}>
-                          <Trash size={8} className='text-destructive' />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
               </div>
             </ScrollArea>
 
@@ -826,34 +800,49 @@ export default function Page() {
                       (selectedDate && format(selectedDate, 'yyyy-MM-dd'))
                   )
                   .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
-                  .map((event) => (
-                    <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
-                      <div className='flex items-center'>
-                        <div
-                          className={cn('mr-3 h-10 w-2 rounded-sm', event.all_day ? 'bg-main' : 'bg-amber-500')}></div>
-                        <div>
-                          <p className='text-sm font-semibold'>{event.title}</p>
-                          <span className='text-xs text-gray-600'>
-                            {event.all_day
-                              ? '終日'
-                              : `${format(new Date(new Date(event.start).getTime() - new Date(event.start).getTimezoneOffset() * 60 * 1000), 'HH:mm')} - ${format(new Date(new Date(event.end).getTime() - new Date(event.end).getTimezoneOffset() * 60 * 1000), 'HH:mm')}`}
-                          </span>
+                  .map((event) => {
+                    // 時間指定イベントの場合、時間部分を抽出
+                    let startTime = '終日';
+                    let endTime = '';
+
+                    if (!event.all_day && event.start.includes('T')) {
+                      // T部分を含むISO形式の場合（時間指定イベント）
+                      const startDate = new Date(event.start);
+                      const endDate = new Date(event.end);
+                      startTime = format(new Date(startDate.getTime() + 9 * 60 * 60 * 1000), 'HH:mm');
+                      endTime = format(new Date(endDate.getTime() + 9 * 60 * 60 * 1000), 'HH:mm');
+                    }
+
+                    return (
+                      <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
+                        <div className='flex items-center'>
+                          <div
+                            className={cn(
+                              'mr-3 h-10 w-2 rounded-sm',
+                              event.all_day ? 'bg-main' : 'bg-amber-500'
+                            )}></div>
+                          <div>
+                            <p className='text-sm font-semibold'>{event.title}</p>
+                            <span className='text-xs text-gray-600'>
+                              {event.all_day ? '終日' : `${startTime} - ${endTime}`}
+                            </span>
+                          </div>
+                        </div>
+                        <div className='flex space-x-2'>
+                          <Button
+                            type='button'
+                            size={'xs'}
+                            variant={'ghost'}
+                            onClick={() => handleEditOpenClose({ isOpen: true, event })}>
+                            <Edit size={8} />
+                          </Button>
+                          <Button size={'xs'} variant={'ghost'} onClick={() => deleteEvent(event.id)}>
+                            <Trash size={8} className='text-destructive' />
+                          </Button>
                         </div>
                       </div>
-                      <div className='flex space-x-2'>
-                        <Button
-                          type='button'
-                          size={'xs'}
-                          variant={'ghost'}
-                          onClick={() => handleEditOpenClose({ isOpen: true, event })}>
-                          <Edit size={8} />
-                        </Button>
-                        <Button size={'xs'} variant={'ghost'} onClick={() => deleteEvent(event.id)}>
-                          <Trash size={8} className='text-destructive' />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
               </div>
             </ScrollArea>
 

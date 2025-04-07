@@ -22,7 +22,7 @@ import { Switch } from '@/components/shadcn-ui/switch';
 import { cn } from '@/lib/utils';
 
 import { format } from 'date-fns';
-import { is, ja } from 'date-fns/locale';
+import { ja } from 'date-fns/locale';
 import { CalendarIcon, Timer } from 'lucide-react';
 
 interface Event {
@@ -55,6 +55,19 @@ export function CalendarDialog({
   const [selectedEndDate, setSelectedEndDate] = useState<Date | undefined>(undefined);
   const [isAllDay, setIsAllDay] = useState(true);
 
+  // 日本時間とUTC時間の変換ヘルパー関数
+  const convertToUTC = (date: Date): Date => {
+    // JST（日本時間）からUTCへの変換
+    // タイムゾーンオフセットを考慮し、JST時間をUTCに変換
+    return new Date(date.getTime() - 9 * 60 * 60 * 1000);
+  };
+
+  const convertToJST = (utcDate: Date): Date => {
+    // UTC時間からJST（日本時間）への変換
+    // 与えられたUTC時間に9時間を加算して日本時間に変換
+    return new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
+  };
+
   // set initial values
   useEffect(() => {
     if (open) {
@@ -62,18 +75,18 @@ export function CalendarDialog({
       setInputValue(event?.title ?? '');
 
       if (event) {
-        // イベントがある場合は、そのイベントの日時をそのまま使用
+        // イベントがある場合は、そのイベントの日時をJST時間に変換して使用
         const startDate = new Date(event.start);
         const endDate = new Date(event.end);
 
-        // 終日イベントの場合は日付のみを使用
         if (event.all_day) {
-          setSelectedStartDate(startDate);
-          setSelectedEndDate(endDate);
+          // 終日イベントの場合は時間は気にせず日付のみを使用
+          setSelectedStartDate(new Date(startDate));
+          setSelectedEndDate(new Date(endDate));
         } else {
-          // タイムゾーンオフセットを考慮して調整
-          const jstStart = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60 * 1000);
-          const jstEnd = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60 * 1000);
+          // すでにUTCで保存されているデータをJST時間に変換
+          const jstStart = convertToJST(startDate);
+          const jstEnd = convertToJST(endDate);
           setSelectedStartDate(jstStart);
           setSelectedEndDate(jstEnd);
         }
@@ -104,6 +117,18 @@ export function CalendarDialog({
         acc.classList.toggle('hidden');
       }
     });
+  };
+
+  // イベント保存時にUTC時間に変換する処理
+  const formatDateForSave = (date: Date, isAllDay: boolean): string => {
+    if (isAllDay) {
+      // 終日イベントの場合は日付のみを返す
+      return format(date, 'yyyy-MM-dd');
+    } else {
+      // 時間指定イベントの場合は、選択された日本時間をUTC形式に変換して返す
+      const utcDate = convertToUTC(date);
+      return utcDate.toISOString();
+    }
   };
 
   return (
@@ -358,14 +383,10 @@ export function CalendarDialog({
                   updateEvent(event.id, {
                     title: inputValue,
                     start: selectedStartDate
-                      ? isAllDay
-                        ? format(selectedStartDate, 'yyyy-MM-dd')
-                        : selectedStartDate.toLocaleString('sv', { timeZone: 'Asia/Tokyo' }).replace(' ', 'T')
+                      ? formatDateForSave(selectedStartDate, isAllDay)
                       : format(selectedDate, 'yyyy-MM-dd'),
                     end: selectedEndDate
-                      ? isAllDay
-                        ? format(selectedEndDate, 'yyyy-MM-dd')
-                        : selectedEndDate.toLocaleString('sv', { timeZone: 'Asia/Tokyo' }).replace(' ', 'T')
+                      ? formatDateForSave(selectedEndDate, isAllDay)
                       : format(selectedDate, 'yyyy-MM-dd'),
                     all_day: isAllDay
                   });
@@ -373,14 +394,10 @@ export function CalendarDialog({
                   createEvent({
                     title: inputValue,
                     start: selectedStartDate
-                      ? isAllDay
-                        ? format(selectedStartDate, 'yyyy-MM-dd')
-                        : selectedStartDate.toLocaleString('sv', { timeZone: 'Asia/Tokyo' }).replace(' ', 'T')
+                      ? formatDateForSave(selectedStartDate, isAllDay)
                       : format(selectedDate, 'yyyy-MM-dd'),
                     end: selectedEndDate
-                      ? isAllDay
-                        ? format(selectedEndDate, 'yyyy-MM-dd')
-                        : selectedEndDate.toLocaleString('sv', { timeZone: 'Asia/Tokyo' }).replace(' ', 'T')
+                      ? formatDateForSave(selectedEndDate, isAllDay)
                       : format(selectedDate, 'yyyy-MM-dd'),
                     all_day: isAllDay
                   });
