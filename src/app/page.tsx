@@ -271,7 +271,22 @@ export default function Page() {
         // 新規作成の場合は、選択された日付を使用
         setSelectedDate(day);
         setSelectedEvent(undefined);
-        setEditOpen(isOpen);
+
+        // カレンダーの日付をクリックした場合、その日に含まれる予定一覧を表示
+        const currentDate = new Date(format(day, 'yyyy-MM-dd'));
+        const eventsForDay = events.filter((event) => {
+          const eventStart = new Date(event.start.split('T')[0]);
+          const eventEnd = new Date(event.end.split('T')[0]);
+          return eventStart <= currentDate && eventEnd >= currentDate;
+        });
+
+        if (eventsForDay.length > 0) {
+          // 予定がある場合はダイアログを表示
+          setDialogOpen(isOpen);
+        } else {
+          // 予定がない場合は新規作成画面を表示
+          setEditOpen(isOpen);
+        }
       }
 
       // 日付が変更された場合は、カレンダーの表示も更新
