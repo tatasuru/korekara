@@ -494,8 +494,8 @@ export default function Page() {
             variant='outline'
             size='sm'
             onClick={goBackToday}
-            className='border-main text-main hover:bg-main cursor-pointer text-xs hover:text-white md:text-sm'
-            disabled={!date || format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')}>
+            className='border-main text-main hover:bg-main cursor-pointer text-xs hover:text-white'
+            disabled={!date || format(date, 'yyyy-MM') === format(new Date(), 'yyyy-MM')}>
             今月へ戻る
           </Button>
         </div>
@@ -862,7 +862,7 @@ export default function Page() {
                               {/* more than 3 schedule */}
                               {isDesktop && eventsForDate.length > 3 && (
                                 <div
-                                  className='absolute left-0.5 z-10 truncate border-white bg-white px-1 py-0.5 text-left text-[8px] font-bold hover:opacity-50 md:text-xs'
+                                  className='absolute left-0.5 z-10 truncate border-white bg-white px-1 py-0.5 text-left text-[8px] font-bold hover:opacity-50 md:text-[10px]'
                                   style={{
                                     width: 'calc(100% - 4px)',
                                     maxWidth: 'calc(100% - 4px)',
@@ -873,7 +873,7 @@ export default function Page() {
                               )}
                               {!isDesktop && eventsForDate.length > 2 && (
                                 <div
-                                  className='absolute left-0.5 z-10 truncate border-white bg-white px-1 py-0.5 text-left text-[8px] font-bold hover:opacity-50 md:text-xs'
+                                  className='md:text-[] absolute left-0.5 z-10 truncate border-white bg-white px-1 py-0.5 text-left text-[8px] font-bold hover:opacity-50'
                                   style={{
                                     width: 'calc(100% - 4px)',
                                     maxWidth: 'calc(100% - 4px)',
