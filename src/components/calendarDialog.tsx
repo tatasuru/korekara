@@ -17,13 +17,14 @@ import { Input } from '@/components/shadcn-ui/input';
 import { Label } from '@/components/shadcn-ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/shadcn-ui/popover';
 import { ScrollArea, ScrollBar } from '@/components/shadcn-ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/shadcn-ui/select';
 import { Separator } from '@/components/shadcn-ui/separator';
 import { Switch } from '@/components/shadcn-ui/switch';
 import { cn } from '@/lib/utils';
 
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { CalendarIcon, Timer } from 'lucide-react';
+import { CalendarIcon, Clock, Timer } from 'lucide-react';
 
 interface Event {
   id: number;
@@ -222,47 +223,55 @@ export function CalendarDialog({
                 }}
               />
               {!isAllDay && (
-                <div className='flex h-[250px] w-fit flex-col divide-y sm:flex-row sm:divide-x sm:divide-y-0'>
-                  <ScrollArea className='w-64 sm:w-auto'>
-                    <div className='flex p-2 sm:flex-col'>
-                      {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
-                        <Button
-                          key={hour}
-                          size='icon'
-                          variant={selectedStartDate?.getHours() === hour ? 'main' : 'ghost'}
-                          className='aspect-square shrink-0 sm:w-full'
-                          onClick={() => {
-                            setSelectedStartDate((prev) => {
-                              if (!prev) return new Date();
-                              return new Date(prev.setHours(hour));
-                            });
-                          }}>
-                          {hour}
-                        </Button>
-                      ))}
+                <div className='flex w-full flex-col gap-4 p-4'>
+                  <div className='flex items-center gap-4'>
+                    <Clock className='text-muted-foreground h-4 w-4' />
+                    <div className='flex items-center gap-2'>
+                      <Select
+                        value={selectedStartDate?.getHours().toString()}
+                        onValueChange={(value) => {
+                          setSelectedStartDate((prev) => {
+                            if (!prev) return new Date();
+                            const newDate = new Date(prev);
+                            newDate.setHours(parseInt(value));
+                            return newDate;
+                          });
+                        }}>
+                        <SelectTrigger className='w-[80px]'>
+                          <SelectValue placeholder='時間' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
+                            <SelectItem key={hour} value={hour.toString()}>
+                              {hour.toString().padStart(2, '0')}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <span>:</span>
+                      <Select
+                        value={selectedStartDate?.getMinutes().toString()}
+                        onValueChange={(value) => {
+                          setSelectedStartDate((prev) => {
+                            if (!prev) return new Date();
+                            const newDate = new Date(prev);
+                            newDate.setMinutes(parseInt(value));
+                            return newDate;
+                          });
+                        }}>
+                        <SelectTrigger className='w-[80px]'>
+                          <SelectValue placeholder='分' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 12 }, (_, i) => i * 5).map((minute) => (
+                            <SelectItem key={minute} value={minute.toString()}>
+                              {minute.toString().padStart(2, '0')}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <ScrollBar orientation='horizontal' className='sm:hidden' />
-                  </ScrollArea>
-                  <ScrollArea className='w-64 sm:w-auto'>
-                    <div className='flex p-2 sm:flex-col'>
-                      {Array.from({ length: 12 }, (_, i) => i * 5).map((minute) => (
-                        <Button
-                          key={minute}
-                          size='icon'
-                          variant={selectedStartDate?.getMinutes() === minute ? 'main' : 'ghost'}
-                          className='aspect-square shrink-0 sm:w-full'
-                          onClick={() => {
-                            setSelectedStartDate((prev) => {
-                              if (!prev) return new Date();
-                              return new Date(prev.setMinutes(minute));
-                            });
-                          }}>
-                          {minute.toString().padStart(2, '0')}
-                        </Button>
-                      ))}
-                    </div>
-                    <ScrollBar orientation='horizontal' className='sm:hidden' />
-                  </ScrollArea>
+                  </div>
                 </div>
               )}
             </div>
@@ -325,47 +334,55 @@ export function CalendarDialog({
                 }}
               />
               {!isAllDay && (
-                <div className='flex h-[250px] w-fit flex-col divide-y sm:flex-row sm:divide-x sm:divide-y-0'>
-                  <ScrollArea className='w-64 sm:w-auto'>
-                    <div className='flex p-2 sm:flex-col'>
-                      {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
-                        <Button
-                          key={hour}
-                          size='icon'
-                          variant={selectedEndDate?.getHours() === hour ? 'main' : 'ghost'}
-                          className='aspect-square shrink-0 sm:w-full'
-                          onClick={() => {
-                            setSelectedEndDate((prev) => {
-                              if (!prev) return new Date();
-                              return new Date(prev.setHours(hour));
-                            });
-                          }}>
-                          {hour}
-                        </Button>
-                      ))}
+                <div className='flex w-full flex-col gap-4 p-4'>
+                  <div className='flex items-center gap-4'>
+                    <Clock className='text-muted-foreground h-4 w-4' />
+                    <div className='flex items-center gap-2'>
+                      <Select
+                        value={selectedEndDate?.getHours().toString()}
+                        onValueChange={(value) => {
+                          setSelectedEndDate((prev) => {
+                            if (!prev) return new Date();
+                            const newDate = new Date(prev);
+                            newDate.setHours(parseInt(value));
+                            return newDate;
+                          });
+                        }}>
+                        <SelectTrigger className='w-[80px]'>
+                          <SelectValue placeholder='時間' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
+                            <SelectItem key={hour} value={hour.toString()}>
+                              {hour.toString().padStart(2, '0')}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <span>:</span>
+                      <Select
+                        value={selectedEndDate?.getMinutes().toString()}
+                        onValueChange={(value) => {
+                          setSelectedEndDate((prev) => {
+                            if (!prev) return new Date();
+                            const newDate = new Date(prev);
+                            newDate.setMinutes(parseInt(value));
+                            return newDate;
+                          });
+                        }}>
+                        <SelectTrigger className='w-[80px]'>
+                          <SelectValue placeholder='分' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 12 }, (_, i) => i * 5).map((minute) => (
+                            <SelectItem key={minute} value={minute.toString()}>
+                              {minute.toString().padStart(2, '0')}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <ScrollBar orientation='horizontal' className='hidden' />
-                  </ScrollArea>
-                  <ScrollArea className='w-64 sm:w-auto'>
-                    <div className='flex p-2 sm:flex-col'>
-                      {Array.from({ length: 12 }, (_, i) => i * 5).map((minute) => (
-                        <Button
-                          key={minute}
-                          size='icon'
-                          variant={selectedEndDate?.getMinutes() === minute ? 'main' : 'ghost'}
-                          className='aspect-square shrink-0 sm:w-full'
-                          onClick={() => {
-                            setSelectedEndDate((prev) => {
-                              if (!prev) return new Date();
-                              return new Date(prev.setMinutes(minute));
-                            });
-                          }}>
-                          {minute.toString().padStart(2, '0')}
-                        </Button>
-                      ))}
-                    </div>
-                    <ScrollBar orientation='horizontal' className='hidden' />
-                  </ScrollArea>
+                  </div>
                 </div>
               )}
             </div>
