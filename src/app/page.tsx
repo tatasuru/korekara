@@ -162,7 +162,8 @@ export default function Page() {
     const sortedEvents = [...eventsForDate].sort((a, b) => {
       const aStart = new Date(a.start.split('T')[0]);
       const bStart = new Date(b.start.split('T')[0]);
-      const currentDate = new Date(format(date, 'yyyy-MM-dd'));
+      const dateStr = format(date, 'yyyy-MM-dd');
+      const dateObj = new Date(dateStr);
 
       // 1. 週跨ぎイベント優先
       const aIsContinuing = aStart < weekStart;
@@ -178,10 +179,21 @@ export default function Page() {
       const aIsMultiDay = format(aStart, 'yyyy-MM-dd') !== format(aEnd, 'yyyy-MM-dd');
       const bIsMultiDay = format(bStart, 'yyyy-MM-dd') !== format(bEnd, 'yyyy-MM-dd');
 
+      // 継続中のイベントはさらに優先
+      const aIsMidWeekContinuing = aStart < dateObj && format(date, 'yyyy-MM-dd') !== format(weekStart, 'yyyy-MM-dd');
+      const bIsMidWeekContinuing = bStart < dateObj && format(date, 'yyyy-MM-dd') !== format(weekStart, 'yyyy-MM-dd');
+
+      if (aIsMidWeekContinuing && !bIsMidWeekContinuing) return -1;
+      if (!aIsMidWeekContinuing && bIsMidWeekContinuing) return 1;
+
       if (aIsMultiDay && !bIsMultiDay) return -1;
       if (!aIsMultiDay && bIsMultiDay) return 1;
 
-      // 3. 時間順
+      // 3. 終日優先
+      if (a.all_day && !b.all_day) return -1;
+      if (!a.all_day && b.all_day) return 1;
+
+      // 4. 時間順
       return aStart.getTime() - bStart.getTime();
     });
 
@@ -477,7 +489,7 @@ export default function Page() {
   return (
     <div className='flex h-full w-full flex-col'>
       <div className='mb-4 flex flex-col items-center justify-between gap-3 md:mb-2 md:flex-row md:gap-0'>
-        <div className='flex w-full items-center justify-between gap-4 md:w-auto'>
+        <div className='hidden w-full items-center justify-between gap-4 md:flex md:w-auto'>
           <Button
             variant='outline'
             size='sm'
@@ -496,7 +508,7 @@ export default function Page() {
             className='size-6 cursor-pointer md:size-9'>
             <ChevronLeft className='h-4 w-4' />
           </Button>
-          <div className='text-sm font-medium'>{formatMonthRange()}</div>
+          <div className='text-base font-medium md:text-sm'>{formatMonthRange()}</div>
           <Button
             variant='outline'
             size='icon'
@@ -685,7 +697,7 @@ export default function Page() {
                                 {format(date, 'd')}
                               </span>
                             </div>
-                            <div className='min-h-[30px] overflow-hidden'>
+                            <div className='max-h-[80px] min-h-[80px] overflow-hidden md:max-h-none md:min-h-[30px]'>
                               {dateIndex === 0 &&
                                 continuingEvents.map((event) => {
                                   const eventEnd = new Date(event.end);
@@ -704,7 +716,7 @@ export default function Page() {
                                       style={{
                                         width: `calc(${daysInThisWeek * 100}% - 4px)`,
                                         maxWidth: `calc(${daysInThisWeek * 100}% - 4px)`,
-                                        top: `${isDesktop ? 30 + position * 24 : 20 + position * 14}px`
+                                        top: `${isDesktop ? 30 + position * 24 : 30 + position * 18}px`
                                       }}
                                       key={`continuing-${event.id}`}
                                       onClick={(e) => {
@@ -743,7 +755,7 @@ export default function Page() {
                                       style={{
                                         width: `calc(${daysRemaining * 100}% - 4px)`,
                                         maxWidth: `calc(${daysRemaining * 100}% - 4px)`,
-                                        top: `${isDesktop ? 30 + position * 24 : 20 + position * 14}px`
+                                        top: `${isDesktop ? 30 + position * 24 : 30 + position * 18}px`
                                       }}
                                       key={`midweek-continuing-${event.id}`}
                                       onClick={(e) => {
@@ -782,7 +794,7 @@ export default function Page() {
                                     style={{
                                       width: `calc(${daysVisibleInWeek * 100}% - 4px)`,
                                       maxWidth: `calc(${daysVisibleInWeek * 100}% - 4px)`,
-                                      top: `${isDesktop ? 30 + position * 24 : 30 + position * 16}px`
+                                      top: `${isDesktop ? 30 + position * 24 : 30 + position * 18}px`
                                     }}
                                     key={event.id}
                                     onClick={(e) => {
@@ -804,9 +816,10 @@ export default function Page() {
                                   0,
                                   Math.max(
                                     0,
-                                    3 -
+                                    (isDesktop ? 3 : 2) -
                                       (dateIndex === 0 ? continuingEvents.length : 0) -
-                                      multiDayEventsStartingHere.length
+                                      multiDayEventsStartingHere.length -
+                                      (dateIndex > 0 ? midWeekContinuingEvents.length : 0)
                                   )
                                 )
                                 .map((event, index) => {
@@ -833,7 +846,7 @@ export default function Page() {
                                       style={{
                                         width: 'calc(100% - 4px)',
                                         maxWidth: 'calc(100% - 4px)',
-                                        top: `${isDesktop ? 30 + position * 24 : 30 + position * 16}px`
+                                        top: `${isDesktop ? 30 + position * 24 : 30 + position * 18}px`
                                       }}>
                                       {!event.all_day && <div className='bg-main h-2 w-2 flex-shrink-0 rounded-full' />}
                                       <p className='truncate'>{event.title}</p>
@@ -848,7 +861,7 @@ export default function Page() {
                                   style={{
                                     width: 'calc(100% - 4px)',
                                     maxWidth: 'calc(100% - 4px)',
-                                    top: `${isDesktop ? 30 + 3 * 24 : 20 + 3 * 14}px`
+                                    top: `${30 + 3 * 24}px`
                                   }}>
                                   他{eventsForDate.length - 3}件...
                                 </div>
@@ -859,7 +872,7 @@ export default function Page() {
                                   style={{
                                     width: 'calc(100% - 4px)',
                                     maxWidth: 'calc(100% - 4px)',
-                                    top: `${isDesktop ? 30 + 3 * 24 : 20 + 3 * 14}px`
+                                    top: `${30 + Math.min(2, eventsForDate.length > 0 ? Math.min(eventsForDate.length - 1, 1) : 0) * 18}px`
                                   }}>
                                   他{eventsForDate.length - 2}件...
                                 </div>
@@ -911,7 +924,11 @@ export default function Page() {
                     if (aIsContinuing && !bIsContinuing) return -1;
                     if (!aIsContinuing && bIsContinuing) return 1;
 
-                    // 2. 複数日イベント優先
+                    // 2. 終日イベント優先
+                    if (a.all_day && !b.all_day) return -1;
+                    if (!a.all_day && b.all_day) return 1;
+
+                    // 3. 複数日イベント優先
                     const aEnd = new Date(a.end.split('T')[0]);
                     const bEnd = new Date(b.end.split('T')[0]);
 
@@ -921,7 +938,7 @@ export default function Page() {
                     if (aIsMultiDay && !bIsMultiDay) return -1;
                     if (!aIsMultiDay && bIsMultiDay) return 1;
 
-                    // 3. 時間順
+                    // 4. 時間順
                     return new Date(a.start).getTime() - new Date(b.start).getTime();
                   })
                   .map((event) => (
@@ -1002,7 +1019,11 @@ export default function Page() {
                     if (aIsContinuing && !bIsContinuing) return -1;
                     if (!aIsContinuing && bIsContinuing) return 1;
 
-                    // 2. 複数日イベント優先
+                    // 2. 終日イベント優先
+                    if (a.all_day && !b.all_day) return -1;
+                    if (!a.all_day && b.all_day) return 1;
+
+                    // 3. 複数日イベント優先
                     const aEnd = new Date(a.end.split('T')[0]);
                     const bEnd = new Date(b.end.split('T')[0]);
 
@@ -1012,7 +1033,7 @@ export default function Page() {
                     if (aIsMultiDay && !bIsMultiDay) return -1;
                     if (!aIsMultiDay && bIsMultiDay) return 1;
 
-                    // 3. 時間順
+                    // 4. 時間順
                     return new Date(a.start).getTime() - new Date(b.start).getTime();
                   })
                   .map((event) => (
