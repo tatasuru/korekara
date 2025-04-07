@@ -573,7 +573,9 @@ export default function Page() {
             locale={ja}
             weekStartsOn={1}
             showOutsideDays={false}
-            fixedWeeks={true}
+            fixedWeeks={false}
+            numberOfMonths={1}
+            ISOWeek={false}
             formatters={{
               formatCaption: (jaDate) => {
                 const date = new Date(jaDate);
