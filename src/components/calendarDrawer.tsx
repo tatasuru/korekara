@@ -200,19 +200,22 @@ export function CalendarDrawer({
                     onSelect={(newDate) => {
                       setSelectedStartDate(newDate);
                     }}
+                    fixedWeeks={true}
                     formatters={{
                       formatCaption: (jaDate) => {
                         const date = new Date(jaDate);
                         return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
                       }
                     }}
+                    weekStartsOn={1}
                     classNames={{
                       months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1 w-full',
                       month: 'space-y-4 w-full h-full flex flex-col',
                       table: 'w-full h-full space-y-1',
                       head_row: '',
                       head: 'text-muted-foreground',
-                      head_cell: 'text-muted-foreground rounded-md w-6 font-normal text-[0.8rem]',
+                      head_cell:
+                        'text-muted-foreground rounded-md w-6 font-normal text-[0.8rem] [&:nth-child(6)]:text-blue-500 [&:nth-child(7)]:text-red-500',
                       row: 'w-full mt-2',
                       cell: 'relative text-center text-sm focus-within:relative',
                       day_selected: 'bg-main text-white hover:bg-main/90 hover:text-white'
@@ -311,19 +314,22 @@ export function CalendarDrawer({
                     onSelect={(newDate) => {
                       setSelectedEndDate(newDate);
                     }}
+                    fixedWeeks={true}
                     formatters={{
                       formatCaption: (jaDate) => {
                         const date = new Date(jaDate);
                         return `${date.getFullYear()}年 ${date.getMonth() + 1}月`;
                       }
                     }}
+                    weekStartsOn={1}
                     classNames={{
                       months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 flex-1 w-full',
                       month: 'space-y-4 w-full h-full flex flex-col',
                       table: 'w-full h-full space-y-1',
                       head_row: '',
                       head: 'text-muted-foreground',
-                      head_cell: 'text-muted-foreground rounded-md w-6 font-normal text-[0.8rem]',
+                      head_cell:
+                        'text-muted-foreground rounded-md w-6 font-normal text-[0.8rem] [&:nth-child(6)]:text-blue-500 [&:nth-child(7)]:text-red-500',
                       row: 'w-full mt-2',
                       cell: 'relative text-center text-sm focus-within:relative',
                       day_selected: 'bg-main text-white hover:bg-main/90 hover:text-white'

@@ -573,6 +573,7 @@ export default function Page() {
             locale={ja}
             weekStartsOn={1}
             showOutsideDays={false}
+            fixedWeeks={true}
             formatters={{
               formatCaption: (jaDate) => {
                 const date = new Date(jaDate);
@@ -585,6 +586,8 @@ export default function Page() {
               month: 'space-y-4 w-full h-full flex flex-col',
               table: 'w-full h-full border-collapse space-y-1',
               head_row: '',
+              head_cell:
+                'text-muted-foreground rounded-md text-[0.85rem] w-8 font-normal [&:nth-child(6)]:text-blue-500 [&:nth-child(7)]:text-red-500',
               row: 'w-full mt-2 border-b',
               cell: 'relative p-2 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-range-end)]:rounded-r-md',
               day: 'absolute top-2 left-1/2 transform -translate-x-1/2 p-0 md:w-8 md:h-8 w-6 h-6 md:text-sm flex items-center justify-center rounded-full cursor-pointer text-xs',
