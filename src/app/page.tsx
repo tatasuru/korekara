@@ -572,7 +572,7 @@ export default function Page() {
             className='flex h-full w-full p-0 md:p-3'
             locale={ja}
             weekStartsOn={1}
-            fixedWeeks
+            showOutsideDays={false}
             formatters={{
               formatCaption: (jaDate) => {
                 const date = new Date(jaDate);
@@ -697,7 +697,7 @@ export default function Page() {
                                 {format(date, 'd')}
                               </span>
                             </div>
-                            <div className='max-h-[80px] min-h-[80px] overflow-hidden md:max-h-none md:min-h-[30px]'>
+                            <div className='max-h-[120px] min-h-[120px] overflow-hidden md:max-h-none md:min-h-[100px]'>
                               {dateIndex === 0 &&
                                 continuingEvents.map((event) => {
                                   const eventEnd = new Date(event.end);
