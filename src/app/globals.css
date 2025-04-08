@@ -46,6 +46,8 @@
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --color-main: var(--main);
+  --color-green: var(--green);
+  --color-pink: var(--pink);
 
   @keyframes accordion-down {
     from {
@@ -101,6 +103,8 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
   --main: oklch(79.51% 0.1252 87.69);
+  --green: oklch(0.811 0.083 147.9);
+  --pink: oklch(0.832 0.177 329);
 }
 
 .dark {
@@ -137,6 +141,8 @@
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
   --main: oklch(45% 0.089 78.47);
+  --green: oklch(0.811 0.083 147.9);
+  --pink: oklch(0.832 0.177 329);
 }
 
 @layer base {

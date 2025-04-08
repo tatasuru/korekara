@@ -44,6 +44,7 @@ interface Event {
   start: string;
   end: string;
   all_day: boolean;
+  color: 'main' | 'green' | 'pink';
 }
 
 export default function Page() {
@@ -56,7 +57,6 @@ export default function Page() {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedEvent, setSelectedEvent] = useState<Event | undefined>(undefined);
-
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
   // helper function to calculate event positions
@@ -362,7 +362,7 @@ export default function Page() {
   };
 
   // Create events
-  const createEvent = async (scheduleData: Pick<Event, 'title' | 'start' | 'end' | 'all_day'>) => {
+  const createEvent = async (scheduleData: Pick<Event, 'title' | 'start' | 'end' | 'all_day' | 'color'>) => {
     // Create Date objects with the correct timezone
     const startDate = new Date(scheduleData.start);
     const endDate = new Date(scheduleData.end);
@@ -379,7 +379,8 @@ export default function Page() {
             title: scheduleData.title,
             start,
             end,
-            all_day: scheduleData.all_day
+            all_day: scheduleData.all_day,
+            color: scheduleData.color
           }
         ])
         .select();
@@ -404,7 +405,8 @@ export default function Page() {
           title: scheduleData.title,
           start: utcStart.toISOString(),
           end: utcEnd.toISOString(),
-          all_day: scheduleData.all_day
+          all_day: scheduleData.all_day,
+          color: scheduleData.color
         }
       ])
       .select();
@@ -420,7 +422,7 @@ export default function Page() {
   // Update event
   const updateEvent = async (
     id: number,
-    { title, start, end, all_day }: Pick<Event, 'title' | 'start' | 'end' | 'all_day'>
+    { title, start, end, all_day, color }: Pick<Event, 'title' | 'start' | 'end' | 'all_day' | 'color'>
   ) => {
     // Create Date objects with the correct timezone
     const startDate = new Date(start);
@@ -437,7 +439,8 @@ export default function Page() {
           title,
           start: newStart,
           end: newEnd,
-          all_day
+          all_day,
+          color
         })
         .match({ id })
         .select();
@@ -461,7 +464,8 @@ export default function Page() {
         title,
         start: utcStart.toISOString(),
         end: utcEnd.toISOString(),
-        all_day
+        all_day,
+        color
       })
       .match({ id })
       .select();
@@ -715,8 +719,18 @@ export default function Page() {
                                       className={cn(
                                         'absolute left-0.5 z-10 flex w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
                                         event.all_day
-                                          ? 'bg-main hover:bg-main/80 text-white'
-                                          : 'bg-main/20 hover:bg-main/30 text-main'
+                                          ? event.color === 'main'
+                                            ? 'bg-main hover:bg-main/80 text-white'
+                                            : event.color === 'green'
+                                              ? 'bg-green hover:bg-green/80 text-white'
+                                              : 'bg-pink hover:bg-pink/80 text-white'
+                                          : event.color === 'main'
+                                            ? 'bg-main/20 hover:bg-main/30 text-main'
+                                            : event.color === 'green'
+                                              ? 'bg-green/20 hover:bg-green/30 text-green'
+                                              : event.color === 'pink'
+                                                ? 'bg-pink/20 hover:bg-pink/30 text-pink'
+                                                : 'bg-main/20 hover:bg-main/30 text-main'
                                       )}
                                       style={{
                                         width: `calc(${daysInThisWeek * 100}% - 4px)`,
@@ -733,9 +747,17 @@ export default function Page() {
                                         });
                                       }}>
                                       {!event.all_day && (
-                                        <div className='bg-main h-1 w-1 flex-shrink-0 rounded-full md:h-2 md:w-2' />
+                                        <div
+                                          className={cn(
+                                            'h-1 w-1 flex-shrink-0 rounded-full md:h-2 md:w-2',
+                                            event.color === 'main'
+                                              ? 'bg-main'
+                                              : event.color === 'green'
+                                                ? 'bg-green'
+                                                : 'bg-pink'
+                                          )}
+                                        />
                                       )}
-                                      <p className='truncate text-[8px] md:text-xs'>{event.title}</p>
                                     </div>
                                   );
                                 })}
@@ -756,8 +778,18 @@ export default function Page() {
                                       className={cn(
                                         'absolute left-0.5 z-10 flex w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
                                         event.all_day
-                                          ? 'bg-main hover:bg-main/80 text-white'
-                                          : 'bg-main/20 hover:bg-main/30 text-main'
+                                          ? event.color === 'main'
+                                            ? 'bg-main hover:bg-main/80 text-white'
+                                            : event.color === 'green'
+                                              ? 'bg-green hover:bg-green/80 text-white'
+                                              : 'bg-pink hover:bg-pink/80 text-white'
+                                          : event.color === 'main'
+                                            ? 'bg-main/20 hover:bg-main/30 text-main'
+                                            : event.color === 'green'
+                                              ? 'bg-green/20 hover:bg-green/30 text-green'
+                                              : event.color === 'pink'
+                                                ? 'bg-pink/20 hover:bg-pink/30 text-pink'
+                                                : 'bg-main/20 hover:bg-main/30 text-main'
                                       )}
                                       style={{
                                         width: `calc(${daysRemaining * 100}% - 4px)`,
@@ -774,7 +806,16 @@ export default function Page() {
                                         });
                                       }}>
                                       {!event.all_day && (
-                                        <div className='bg-main h-1 w-1 flex-shrink-0 rounded-full md:h-2 md:w-2' />
+                                        <div
+                                          className={cn(
+                                            'h-1 w-1 flex-shrink-0 rounded-full md:h-2 md:w-2',
+                                            event.color === 'main'
+                                              ? 'bg-main'
+                                              : event.color === 'green'
+                                                ? 'bg-green'
+                                                : 'bg-pink'
+                                          )}
+                                        />
                                       )}
                                     </div>
                                   );
@@ -797,8 +838,18 @@ export default function Page() {
                                     className={cn(
                                       'absolute left-0.5 z-10 flex w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
                                       event.all_day
-                                        ? 'bg-main hover:bg-main/80 text-white'
-                                        : 'bg-main/20 hover:bg-main/30 text-main'
+                                        ? event.color === 'main'
+                                          ? 'bg-main hover:bg-main/80 text-white'
+                                          : event.color === 'green'
+                                            ? 'bg-green hover:bg-green/80 text-white'
+                                            : 'bg-pink hover:bg-pink/80 text-white'
+                                        : event.color === 'main'
+                                          ? 'bg-main/20 hover:bg-main/30 text-main'
+                                          : event.color === 'green'
+                                            ? 'bg-green/20 hover:bg-green/30 text-green'
+                                            : event.color === 'pink'
+                                              ? 'bg-pink/20 hover:bg-pink/30 text-pink'
+                                              : 'bg-main/20 hover:bg-main/30 text-main'
                                     )}
                                     style={{
                                       width: `calc(${daysVisibleInWeek * 100}% - 4px)`,
@@ -815,7 +866,16 @@ export default function Page() {
                                       });
                                     }}>
                                     {!event.all_day && (
-                                      <div className='bg-main h-1 w-1 flex-shrink-0 rounded-full md:h-2 md:w-2' />
+                                      <div
+                                        className={cn(
+                                          'h-1 w-1 flex-shrink-0 rounded-full md:h-2 md:w-2',
+                                          event.color === 'main'
+                                            ? 'bg-main'
+                                            : event.color === 'green'
+                                              ? 'bg-green'
+                                              : 'bg-pink'
+                                        )}
+                                      />
                                     )}
                                     <p className='truncate text-[8px] md:text-xs'>{event.title}</p>
                                   </div>
@@ -847,8 +907,18 @@ export default function Page() {
                                       className={cn(
                                         'absolute left-0.5 z-10 flex w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
                                         event.all_day
-                                          ? 'bg-main hover:bg-main/80 text-white'
-                                          : 'bg-main/20 hover:bg-main/30 text-main'
+                                          ? event.color === 'main'
+                                            ? 'bg-main hover:bg-main/80 text-white'
+                                            : event.color === 'green'
+                                              ? 'bg-green hover:bg-green/80 text-white'
+                                              : 'bg-pink hover:bg-pink/80 text-white'
+                                          : event.color === 'main'
+                                            ? 'bg-main/20 hover:bg-main/30 text-main'
+                                            : event.color === 'green'
+                                              ? 'bg-green/20 hover:bg-green/30 text-green'
+                                              : event.color === 'pink'
+                                                ? 'bg-pink/20 hover:bg-pink/30 text-pink'
+                                                : 'bg-main/20 hover:bg-main/30 text-main'
                                       )}
                                       key={event.id}
                                       onClick={(e) => {
@@ -865,7 +935,16 @@ export default function Page() {
                                         top: `${isDesktop ? 30 + displayIndex * 24 : 30 + displayIndex * 18}px`
                                       }}>
                                       {!event.all_day && (
-                                        <div className='bg-main h-1 w-1 flex-shrink-0 rounded-full md:h-2 md:w-2' />
+                                        <div
+                                          className={cn(
+                                            'h-1 w-1 flex-shrink-0 rounded-full md:h-2 md:w-2',
+                                            event.color === 'main'
+                                              ? 'bg-main'
+                                              : event.color === 'green'
+                                                ? 'bg-green'
+                                                : 'bg-pink'
+                                          )}
+                                        />
                                       )}
                                       <p className='truncate text-[8px] md:text-xs'>{event.title}</p>
                                     </div>
@@ -963,7 +1042,22 @@ export default function Page() {
                     <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
                       <div className='flex items-center'>
                         <div
-                          className={cn('mr-3 h-10 w-2 rounded-sm', event.all_day ? 'bg-main' : 'bg-amber-500')}></div>
+                          className={cn(
+                            'mr-3 h-10 w-2 rounded-sm',
+                            event.all_day
+                              ? event.color === 'main'
+                                ? 'bg-main'
+                                : event.color === 'green'
+                                  ? 'bg-green'
+                                  : 'bg-pink'
+                              : event.color === 'main'
+                                ? 'bg-main/60'
+                                : event.color === 'green'
+                                  ? 'bg-green/60'
+                                  : event.color === 'pink'
+                                    ? 'bg-pink/60'
+                                    : 'bg-main/60'
+                          )}></div>
                         <div>
                           <p className='text-sm font-semibold'>{event.title}</p>
                           <span className='text-xs text-gray-600'>
@@ -1058,7 +1152,22 @@ export default function Page() {
                     <div key={event.id} className='flex items-center justify-between border-b p-3 hover:bg-gray-50'>
                       <div className='flex items-center'>
                         <div
-                          className={cn('mr-3 h-10 w-2 rounded-sm', event.all_day ? 'bg-main' : 'bg-amber-500')}></div>
+                          className={cn(
+                            'mr-3 h-10 w-2 rounded-sm',
+                            event.all_day
+                              ? event.color === 'main'
+                                ? 'bg-main'
+                                : event.color === 'green'
+                                  ? 'bg-green'
+                                  : 'bg-pink'
+                              : event.color === 'main'
+                                ? 'bg-main/60'
+                                : event.color === 'green'
+                                  ? 'bg-green/60'
+                                  : event.color === 'pink'
+                                    ? 'bg-pink/60'
+                                    : 'bg-main/60'
+                          )}></div>
                         <div>
                           <p className='text-sm font-semibold'>{event.title}</p>
                           <span className='text-xs text-gray-600'>

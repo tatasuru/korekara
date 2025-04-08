@@ -24,7 +24,7 @@ import { cn } from '@/lib/utils';
 
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { CalendarIcon, Clock, Timer } from 'lucide-react';
+import { CalendarIcon, Circle, Clock } from 'lucide-react';
 
 interface Event {
   id: number;
@@ -32,6 +32,7 @@ interface Event {
   start: string;
   end: string;
   all_day: boolean;
+  color: 'green' | 'main' | 'pink';
 }
 
 export function CalendarDialog({
@@ -47,14 +48,15 @@ export function CalendarDialog({
   selectedDate: Date;
   event?: Event;
   handleEditOpenClose: ({ isOpen }: { isOpen: boolean }) => void;
-  updateEvent: (id: number, data: Pick<Event, 'title' | 'start' | 'end' | 'all_day'>) => void;
+  updateEvent: (id: number, data: Pick<Event, 'title' | 'start' | 'end' | 'all_day' | 'color'>) => void;
   deleteEvent: (id: number) => void;
-  createEvent: (data: Pick<Event, 'title' | 'start' | 'end' | 'all_day'>) => void;
+  createEvent: (data: Pick<Event, 'title' | 'start' | 'end' | 'all_day' | 'color'>) => void;
 }) {
   const [inputValue, setInputValue] = useState('');
   const [selectedStartDate, setSelectedStartDate] = useState<Date | undefined>(undefined);
   const [selectedEndDate, setSelectedEndDate] = useState<Date | undefined>(undefined);
   const [isAllDay, setIsAllDay] = useState(true);
+  const [selectedColor, setSelectedColor] = useState<Event['color']>('green');
 
   // 日本時間とUTC時間の変換ヘルパー関数
   const convertToUTC = (date: Date): Date => {
@@ -167,6 +169,7 @@ export function CalendarDialog({
           />
         </div>
 
+        {/* start */}
         <div className='flex flex-col items-center justify-between'>
           <div className='flex w-full items-center justify-between'>
             <Label htmlFor='all-day'>開始</Label>
@@ -281,6 +284,7 @@ export function CalendarDialog({
           </div>
         </div>
 
+        {/* end */}
         <div className='flex flex-col items-center justify-between'>
           <div className='flex w-full items-center justify-between'>
             <Label htmlFor='all-day'>終了</Label>
@@ -395,6 +399,33 @@ export function CalendarDialog({
           </div>
         </div>
 
+        {/* color */}
+        <div className='flex flex-col items-center justify-between'>
+          <div className='flex w-full items-center justify-between'>
+            <Label htmlFor='all-day'>色</Label>
+            <div className='flex items-center gap-2'>
+              <Button
+                variant={'outline'}
+                className={cn('h-7 w-7 rounded-full', selectedColor === 'main' ? 'border-main' : 'border-none')}
+                onClick={() => setSelectedColor('main')}>
+                <Circle className='text-main fill-main h-4 w-4' />
+              </Button>
+              <Button
+                variant={'outline'}
+                className={cn('h-7 w-7 rounded-full', selectedColor === 'green' ? 'border-green' : 'border-none')}
+                onClick={() => setSelectedColor('green')}>
+                <Circle className='fill-green text-green h-4 w-4' />
+              </Button>
+              <Button
+                variant={'outline'}
+                className={cn('h-7 w-7 rounded-full', selectedColor === 'pink' ? 'border-pink' : 'border-none')}
+                onClick={() => setSelectedColor('pink')}>
+                <Circle className='fill-pink text-pink h-4 w-4' />
+              </Button>
+            </div>
+          </div>
+        </div>
+
         <DialogFooter>
           <div className='flex w-full flex-col gap-2 pt-6'>
             <Button
@@ -411,7 +442,8 @@ export function CalendarDialog({
                     end: selectedEndDate
                       ? formatDateForSave(selectedEndDate, isAllDay)
                       : format(selectedDate, 'yyyy-MM-dd'),
-                    all_day: isAllDay
+                    all_day: isAllDay,
+                    color: selectedColor
                   });
                 } else {
                   createEvent({
@@ -422,7 +454,8 @@ export function CalendarDialog({
                     end: selectedEndDate
                       ? formatDateForSave(selectedEndDate, isAllDay)
                       : format(selectedDate, 'yyyy-MM-dd'),
-                    all_day: isAllDay
+                    all_day: isAllDay,
+                    color: selectedColor
                   });
                 }
 
