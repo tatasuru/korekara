@@ -57,7 +57,7 @@ export function CalendarDrawer({
   const [selectedStartDate, setSelectedStartDate] = useState<Date | undefined>(undefined);
   const [selectedEndDate, setSelectedEndDate] = useState<Date | undefined>(undefined);
   const [isAllDay, setIsAllDay] = useState(true);
-  const [selectedColor, setSelectedColor] = useState<'main' | 'green' | 'pink'>('main');
+  const [selectedColor, setSelectedColor] = useState<Event['color']>(event?.color || 'green');
 
   // 日本時間とUTC時間の変換ヘルパー関数
   const convertToUTC = (date: Date): Date => {
@@ -77,7 +77,7 @@ export function CalendarDrawer({
     if (open) {
       // Initialize with event data or defaults when modal opens
       setInputValue(event?.title ?? '');
-
+      setSelectedColor(event?.color || 'green');
       if (event) {
         // イベントがある場合は、そのイベントの日時をJST時間に変換して使用
         const startDate = new Date(event.start);

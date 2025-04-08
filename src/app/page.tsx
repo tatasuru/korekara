@@ -647,7 +647,13 @@ export default function Page() {
                             format(event.start, 'yyyy-MM-dd') === format(event.end, 'yyyy-MM-dd')
                         )
                         // all_dayがtrueの場合は配列の最初に追加
-                        .sort((a, b) => (a.all_day ? -1 : 1));
+                        .sort((a, b) => (a.all_day ? -1 : 1))
+                        // 時間指定イベントは時間順に表示
+                        .sort((a, b) => {
+                          if (a.all_day && !b.all_day) return -1;
+                          if (!a.all_day && b.all_day) return 1;
+                          return a.start.localeCompare(b.start);
+                        });
 
                       // 2. Find multi-day events that START on this specific date
                       const multiDayEventsStartingHere = events.filter((event) => {
@@ -720,17 +726,17 @@ export default function Page() {
                                         'group absolute left-0.5 z-10 flex h-4 w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:h-5 md:gap-2 md:px-2 md:text-xs',
                                         event.all_day
                                           ? event.color === 'main'
-                                            ? 'bg-main group-hover:bg-main/80 text-white'
+                                            ? 'bg-main group-hover:bg-main/90 text-white transition-colors duration-200'
                                             : event.color === 'green'
-                                              ? 'bg-green group-hover:bg-green/80 text-white'
-                                              : 'bg-pink group-hover:bg-pink/80 text-white'
+                                              ? 'bg-green group-hover:bg-green/90 text-white transition-colors duration-200'
+                                              : 'bg-pink group-hover:bg-pink/90 text-white transition-colors duration-200'
                                           : event.color === 'main'
-                                            ? 'bg-main/20 group-hover:bg-main/30 text-main'
+                                            ? 'bg-main/20 group-hover:bg-main/40 text-main transition-colors duration-200'
                                             : event.color === 'green'
-                                              ? 'bg-green/20 group-hover:bg-green/30 text-green'
+                                              ? 'bg-green/20 group-hover:bg-green/40 text-green transition-colors duration-200'
                                               : event.color === 'pink'
-                                                ? 'bg-pink/20 group-hover:bg-pink/30 text-pink'
-                                                : 'bg-main/20 group-hover:bg-main/30 text-main'
+                                                ? 'bg-pink/20 group-hover:bg-pink/40 text-pink transition-colors duration-200'
+                                                : 'bg-main/20 group-hover:bg-main/40 text-main transition-colors duration-200'
                                       )}
                                       style={{
                                         width: `calc(${daysInThisWeek * 100}% - 4px)`,
@@ -779,17 +785,17 @@ export default function Page() {
                                         'group absolute left-0.5 z-10 flex h-4 w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:h-5 md:gap-2 md:px-2 md:text-xs',
                                         event.all_day
                                           ? event.color === 'main'
-                                            ? 'bg-main group-hover:bg-main/80 text-white'
+                                            ? 'bg-main group-hover:bg-main/90 text-white transition-colors duration-200'
                                             : event.color === 'green'
-                                              ? 'bg-green group-hover:bg-green/80 text-white'
-                                              : 'bg-pink group-hover:bg-pink/80 text-white'
+                                              ? 'bg-green group-hover:bg-green/90 text-white transition-colors duration-200'
+                                              : 'bg-pink group-hover:bg-pink/90 text-white transition-colors duration-200'
                                           : event.color === 'main'
-                                            ? 'bg-main/20 group-hover:bg-main/30 text-main'
+                                            ? 'bg-main/20 group-hover:bg-main/40 text-main transition-colors duration-200'
                                             : event.color === 'green'
-                                              ? 'bg-green/20 group-hover:bg-green/30 text-green'
+                                              ? 'bg-green/20 group-hover:bg-green/40 text-green transition-colors duration-200'
                                               : event.color === 'pink'
-                                                ? 'bg-pink/20 group-hover:bg-pink/30 text-pink'
-                                                : 'bg-main/20 group-hover:bg-main/30 text-main'
+                                                ? 'bg-pink/20 group-hover:bg-pink/40 text-pink transition-colors duration-200'
+                                                : 'bg-main/20 group-hover:bg-main/40 text-main transition-colors duration-200'
                                       )}
                                       style={{
                                         width: `calc(${daysRemaining * 100}% - 4px)`,
@@ -839,17 +845,17 @@ export default function Page() {
                                       'group absolute left-0.5 z-10 flex h-4 w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:h-5 md:gap-2 md:px-2 md:text-xs',
                                       event.all_day
                                         ? event.color === 'main'
-                                          ? 'bg-main group-hover:bg-main/80 text-white'
+                                          ? 'bg-main group-hover:bg-main/90 text-white transition-colors duration-200'
                                           : event.color === 'green'
-                                            ? 'bg-green group-hover:bg-green/80 text-white'
-                                            : 'bg-pink group-hover:bg-pink/80 text-white'
+                                            ? 'bg-green group-hover:bg-green/90 text-white transition-colors duration-200'
+                                            : 'bg-pink group-hover:bg-pink/90 text-white transition-colors duration-200'
                                         : event.color === 'main'
-                                          ? 'bg-main/20 group-hover:bg-main/30 text-main'
+                                          ? 'bg-main/20 group-hover:bg-main/40 text-main transition-colors duration-200'
                                           : event.color === 'green'
-                                            ? 'bg-green/20 group-hover:bg-green/30 text-green'
+                                            ? 'bg-green/20 group-hover:bg-green/40 text-green transition-colors duration-200'
                                             : event.color === 'pink'
-                                              ? 'bg-pink/20 group-hover:bg-pink/30 text-pink'
-                                              : 'bg-main/20 group-hover:bg-main/30 text-main'
+                                              ? 'bg-pink/20 group-hover:bg-pink/40 text-pink transition-colors duration-200'
+                                              : 'bg-main/20 group-hover:bg-main/40 text-main transition-colors duration-200'
                                     )}
                                     style={{
                                       width: `calc(${daysVisibleInWeek * 100}% - 4px)`,
@@ -908,17 +914,17 @@ export default function Page() {
                                         'group absolute left-0.5 z-10 flex h-4 w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:h-5 md:gap-2 md:px-2 md:text-xs',
                                         event.all_day
                                           ? event.color === 'main'
-                                            ? 'bg-main group-hover:bg-main/80 text-white'
+                                            ? 'bg-main group-hover:bg-main/90 text-white transition-colors duration-200'
                                             : event.color === 'green'
-                                              ? 'bg-green group-hover:bg-green/80 text-white'
-                                              : 'bg-pink group-hover:bg-pink/80 text-white'
+                                              ? 'bg-green group-hover:bg-green/90 text-white transition-colors duration-200'
+                                              : 'bg-pink group-hover:bg-pink/90 text-white transition-colors duration-200'
                                           : event.color === 'main'
-                                            ? 'bg-main/20 group-hover:bg-main/30 text-main'
+                                            ? 'bg-main/20 group-hover:bg-main/40 text-main transition-colors duration-200'
                                             : event.color === 'green'
-                                              ? 'bg-green/20 group-hover:bg-green/30 text-green'
+                                              ? 'bg-green/20 group-hover:bg-green/40 text-green transition-colors duration-200'
                                               : event.color === 'pink'
-                                                ? 'bg-pink/20 group-hover:bg-pink/30 text-pink'
-                                                : 'bg-main/20 group-hover:bg-main/30 text-main'
+                                                ? 'bg-pink/20 group-hover:bg-pink/40 text-pink transition-colors duration-200'
+                                                : 'bg-main/20 group-hover:bg-main/40 text-main transition-colors duration-200'
                                       )}
                                       key={event.id}
                                       onClick={(e) => {

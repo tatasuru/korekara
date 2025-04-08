@@ -56,7 +56,7 @@ export function CalendarDialog({
   const [selectedStartDate, setSelectedStartDate] = useState<Date | undefined>(undefined);
   const [selectedEndDate, setSelectedEndDate] = useState<Date | undefined>(undefined);
   const [isAllDay, setIsAllDay] = useState(true);
-  const [selectedColor, setSelectedColor] = useState<Event['color']>('green');
+  const [selectedColor, setSelectedColor] = useState<Event['color']>(event?.color || 'green');
 
   // 日本時間とUTC時間の変換ヘルパー関数
   const convertToUTC = (date: Date): Date => {
@@ -76,6 +76,7 @@ export function CalendarDialog({
     if (open) {
       // Initialize with event data or defaults when modal opens
       setInputValue(event?.title ?? '');
+      setSelectedColor(event?.color ?? 'green');
 
       if (event) {
         // イベントがある場合は、そのイベントの日時をJST時間に変換して使用
