@@ -874,7 +874,7 @@ export default function Page() {
                                     {!event.all_day && (
                                       <div
                                         className={cn(
-                                          'h-1 w-1 flex-shrink-0 rounded-full md:h-2 md:w-2',
+                                          'hidden h-1 w-1 flex-shrink-0 rounded-full md:block md:h-2 md:w-2',
                                           event.color === 'main'
                                             ? 'bg-main'
                                             : event.color === 'green'
@@ -883,7 +883,7 @@ export default function Page() {
                                         )}
                                       />
                                     )}
-                                    <p className='truncate text-[8px] md:text-xs'>{event.title}</p>
+                                    <p className='truncate text-[10px] md:text-xs'>{event.title}</p>
                                   </div>
                                 );
                               })}
@@ -943,7 +943,7 @@ export default function Page() {
                                       {!event.all_day && (
                                         <div
                                           className={cn(
-                                            'h-1 w-1 flex-shrink-0 rounded-full md:h-2 md:w-2',
+                                            'hidden h-1 w-1 flex-shrink-0 rounded-full md:block md:h-2 md:w-2',
                                             event.color === 'main'
                                               ? 'bg-main'
                                               : event.color === 'green'
@@ -952,7 +952,7 @@ export default function Page() {
                                           )}
                                         />
                                       )}
-                                      <p className='truncate text-[8px] md:text-xs'>{event.title}</p>
+                                      <p className='truncate text-[10px] md:text-xs'>{event.title}</p>
                                     </div>
                                   );
                                 })}
