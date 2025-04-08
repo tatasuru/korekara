@@ -717,20 +717,20 @@ export default function Page() {
                                   return (
                                     <div
                                       className={cn(
-                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
+                                        'group absolute left-0.5 z-10 flex h-4 w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:h-5 md:gap-2 md:px-2 md:text-xs',
                                         event.all_day
                                           ? event.color === 'main'
-                                            ? 'bg-main hover:bg-main/80 text-white'
+                                            ? 'bg-main group-hover:bg-main/80 text-white'
                                             : event.color === 'green'
-                                              ? 'bg-green hover:bg-green/80 text-white'
-                                              : 'bg-pink hover:bg-pink/80 text-white'
+                                              ? 'bg-green group-hover:bg-green/80 text-white'
+                                              : 'bg-pink group-hover:bg-pink/80 text-white'
                                           : event.color === 'main'
-                                            ? 'bg-main/20 hover:bg-main/30 text-main'
+                                            ? 'bg-main/20 group-hover:bg-main/30 text-main'
                                             : event.color === 'green'
-                                              ? 'bg-green/20 hover:bg-green/30 text-green'
+                                              ? 'bg-green/20 group-hover:bg-green/30 text-green'
                                               : event.color === 'pink'
-                                                ? 'bg-pink/20 hover:bg-pink/30 text-pink'
-                                                : 'bg-main/20 hover:bg-main/30 text-main'
+                                                ? 'bg-pink/20 group-hover:bg-pink/30 text-pink'
+                                                : 'bg-main/20 group-hover:bg-main/30 text-main'
                                       )}
                                       style={{
                                         width: `calc(${daysInThisWeek * 100}% - 4px)`,
@@ -776,20 +776,20 @@ export default function Page() {
                                   return (
                                     <div
                                       className={cn(
-                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
+                                        'group absolute left-0.5 z-10 flex h-4 w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:h-5 md:gap-2 md:px-2 md:text-xs',
                                         event.all_day
                                           ? event.color === 'main'
-                                            ? 'bg-main hover:bg-main/80 text-white'
+                                            ? 'bg-main group-hover:bg-main/80 text-white'
                                             : event.color === 'green'
-                                              ? 'bg-green hover:bg-green/80 text-white'
-                                              : 'bg-pink hover:bg-pink/80 text-white'
+                                              ? 'bg-green group-hover:bg-green/80 text-white'
+                                              : 'bg-pink group-hover:bg-pink/80 text-white'
                                           : event.color === 'main'
-                                            ? 'bg-main/20 hover:bg-main/30 text-main'
+                                            ? 'bg-main/20 group-hover:bg-main/30 text-main'
                                             : event.color === 'green'
-                                              ? 'bg-green/20 hover:bg-green/30 text-green'
+                                              ? 'bg-green/20 group-hover:bg-green/30 text-green'
                                               : event.color === 'pink'
-                                                ? 'bg-pink/20 hover:bg-pink/30 text-pink'
-                                                : 'bg-main/20 hover:bg-main/30 text-main'
+                                                ? 'bg-pink/20 group-hover:bg-pink/30 text-pink'
+                                                : 'bg-main/20 group-hover:bg-main/30 text-main'
                                       )}
                                       style={{
                                         width: `calc(${daysRemaining * 100}% - 4px)`,
@@ -836,20 +836,20 @@ export default function Page() {
                                 return (
                                   <div
                                     className={cn(
-                                      'absolute left-0.5 z-10 flex w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
+                                      'group absolute left-0.5 z-10 flex h-4 w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:h-5 md:gap-2 md:px-2 md:text-xs',
                                       event.all_day
                                         ? event.color === 'main'
-                                          ? 'bg-main hover:bg-main/80 text-white'
+                                          ? 'bg-main group-hover:bg-main/80 text-white'
                                           : event.color === 'green'
-                                            ? 'bg-green hover:bg-green/80 text-white'
-                                            : 'bg-pink hover:bg-pink/80 text-white'
+                                            ? 'bg-green group-hover:bg-green/80 text-white'
+                                            : 'bg-pink group-hover:bg-pink/80 text-white'
                                         : event.color === 'main'
-                                          ? 'bg-main/20 hover:bg-main/30 text-main'
+                                          ? 'bg-main/20 group-hover:bg-main/30 text-main'
                                           : event.color === 'green'
-                                            ? 'bg-green/20 hover:bg-green/30 text-green'
+                                            ? 'bg-green/20 group-hover:bg-green/30 text-green'
                                             : event.color === 'pink'
-                                              ? 'bg-pink/20 hover:bg-pink/30 text-pink'
-                                              : 'bg-main/20 hover:bg-main/30 text-main'
+                                              ? 'bg-pink/20 group-hover:bg-pink/30 text-pink'
+                                              : 'bg-main/20 group-hover:bg-main/30 text-main'
                                     )}
                                     style={{
                                       width: `calc(${daysVisibleInWeek * 100}% - 4px)`,
@@ -905,20 +905,20 @@ export default function Page() {
                                   return (
                                     <div
                                       className={cn(
-                                        'absolute left-0.5 z-10 flex w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:gap-2 md:px-2 md:text-xs',
+                                        'group absolute left-0.5 z-10 flex h-4 w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:h-5 md:gap-2 md:px-2 md:text-xs',
                                         event.all_day
                                           ? event.color === 'main'
-                                            ? 'bg-main hover:bg-main/80 text-white'
+                                            ? 'bg-main group-hover:bg-main/80 text-white'
                                             : event.color === 'green'
-                                              ? 'bg-green hover:bg-green/80 text-white'
-                                              : 'bg-pink hover:bg-pink/80 text-white'
+                                              ? 'bg-green group-hover:bg-green/80 text-white'
+                                              : 'bg-pink group-hover:bg-pink/80 text-white'
                                           : event.color === 'main'
-                                            ? 'bg-main/20 hover:bg-main/30 text-main'
+                                            ? 'bg-main/20 group-hover:bg-main/30 text-main'
                                             : event.color === 'green'
-                                              ? 'bg-green/20 hover:bg-green/30 text-green'
+                                              ? 'bg-green/20 group-hover:bg-green/30 text-green'
                                               : event.color === 'pink'
-                                                ? 'bg-pink/20 hover:bg-pink/30 text-pink'
-                                                : 'bg-main/20 hover:bg-main/30 text-main'
+                                                ? 'bg-pink/20 group-hover:bg-pink/30 text-pink'
+                                                : 'bg-main/20 group-hover:bg-main/30 text-main'
                                       )}
                                       key={event.id}
                                       onClick={(e) => {
