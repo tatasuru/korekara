@@ -883,7 +883,7 @@ export default function Page() {
                                         )}
                                       />
                                     )}
-                                    <p className='truncate text-[10px] md:text-xs'>{event.title}</p>
+                                    <p className='truncate text-center text-[10px] md:text-xs'>{event.title}</p>
                                   </div>
                                 );
                               })}
@@ -911,7 +911,7 @@ export default function Page() {
                                   return (
                                     <div
                                       className={cn(
-                                        'group absolute left-0.5 z-10 flex h-4 w-full items-center justify-start gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:h-5 md:gap-2 md:px-2 md:text-xs',
+                                        'group absolute left-0.5 z-10 flex h-4 w-full items-center justify-center gap-1 rounded-xs px-1 py-0.5 text-[8px] font-bold md:h-5 md:gap-2 md:px-2 md:text-xs',
                                         event.all_day
                                           ? event.color === 'main'
                                             ? 'bg-main group-hover:bg-main/90 text-white transition-colors duration-200'
